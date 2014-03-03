@@ -4,7 +4,9 @@ Enable under settings
 
 #License
 Copyright 2014, John McLear
+
 Copyright 2014, Jan Dittrich
+
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
