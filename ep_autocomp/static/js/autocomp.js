@@ -121,7 +121,7 @@ var autocomp = {
 		console.log(relevantSection,filteredSuggestionsSorted);
 		return filteredSuggestionsSorted;
 	},
-	cursorPosition:function(){
+	cursorPosition:function(context){
 		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //move this out for performace reasons, rarely changes. 
 		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x; 
 		var nodeToFind = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
