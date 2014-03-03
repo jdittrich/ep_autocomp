@@ -1,0 +1,4 @@
+exports.aceKeyEvent = function (type, context, cb, fourth) {
+	autocomp.aceKeyEvent(type, context, cb, fourth);
+    //unsure: do we need to return anything here? return [1] was fiddled with by me e.g. ....
+};

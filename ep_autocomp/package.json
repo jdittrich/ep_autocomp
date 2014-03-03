@@ -1,0 +1,26 @@
+{
+  "name": "ep_autocomp",
+  "version": "0.0.1",
+  "description": "autocompletion",
+  "author": "Jan Dittrich, <d_jan@ymail.com>",
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "peerDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jdittrich/ep_autocomp"
+  },
+  "bugs": {
+    "url": "https://github.com/jdittrich/ep_autocomp/issues"
+  },
+  "dist": {
+    "shasum": "7a6003ba1ee98a111345f1d570d583ebd2ca9d3f"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "Apache",
+  "homepage": "https://github.com/jdittrich/ep_autocomp"
+}
