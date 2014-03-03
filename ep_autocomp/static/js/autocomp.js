@@ -168,6 +168,8 @@ var autocomp = {
 	var position = span.getBoundingClientRect();//now, get the rectangle.
 	clone.remove();
 	
+	return position;
+
 	},
 	getParam: function(sname)
 	{	/*
