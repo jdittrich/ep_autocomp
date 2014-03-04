@@ -57,7 +57,7 @@ var autocomp = {
 		if(autocomp.isEditByMe(context)!==true){return;} //as edit event is called when anyone edits, we must ensure it is the current user
 		
 		var sectionMarker= /[\S]*$/; //what is the  section to be considered? Usually, this will be everything which is not a space. The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end. (To understand better, just paste into regexpal.com) 
-		var afterSectionMarker = /^$|^\s/ //what is the section after the caret in order to allow autocompletion? Usually we don’t want to start autocompletion directly in a word, so we restrict it to either whitepsace \s or to an empty string, ^$. Not this applies the the string after the caret (hence the start of string at the beginning, ^)
+		var afterSectionMarker = /^$|^\s/ ; //what is the section after the caret in order to allow autocompletion? Usually we don’t want to start autocompletion directly in a word, so we restrict it to either whitepsace \s or to an empty string, ^$. Not this applies the the string after the caret (hence the start of string at the beginning, ^)
 		
 		var caretPosition = context.rep.selEnd; //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
 		var currentLine = context.rep.lines.atIndex(caretPosition[0]); //gets infos about the line the caret is in 
@@ -86,21 +86,7 @@ var autocomp = {
 			complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
 		}
 		
-		
-		useful to know: 
-		The structure inside the editor is usually:
-		 div
-		 |_ span
-		 |_ span
-		 |_ span
-		 
-		 div
-		 |- span
-		 etc.: Many divs (equal paragraphs) with spans inside (equal formated sections) So there are few spans if few formating took place, many spans if a lot ofdifferent bold, colored etc. text is there.  
-	
-		In this function, we will determine the div the cursor is in and clone that div and its style. Than, in the clone, we find  the corresponding subnode the cursor is in, than the offset in the corresponding text node the cursor is in.
-		Than we insert a span exactly there and get its position.
-		Than we clean up again, cause this is messy stuff. 
+
 		*/
 		
 		//filter it
@@ -122,6 +108,26 @@ var autocomp = {
 		return filteredSuggestionsSorted;
 	},
 	cursorPosition:function(context){
+		/*
+		gets: context object from a ace editor event (e.g. aceEditEvent)
+		returns: x and y value for the position of the cursor measured in pixel.
+
+		useful to know:
+		The structure inside the editor is usually:
+		div
+		|_ span
+		|_ span
+		|_ span
+
+		div
+		|- span
+		etc.: Many divs (equal paragraphs) with spans inside (equal formated sections) So there are few spans if few formating took place, many spans if a lot ofdifferent bold, colored etc. text is there.
+
+		In this function, we will determine the div the cursor is in and clone that div and its style. Than, in the clone, we find  the corresponding subnode the cursor is in, than the offset in the corresponding text node the cursor is in.
+		Than we insert a span exactly there and get its position.
+		Than we clean up again, cause this is messy stuff.
+		*/
+
 		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //move this out for performace reasons, rarely changes. 
 		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x; 
 		var nodeToFind = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
@@ -154,25 +160,27 @@ var autocomp = {
 				return false; //stop jquery each by returning false
 			}
 		});
-	var leftoverString = $(targetNode).text().length - (counter-context.rep.selEnd[1]); //how many chracters are in front of the cursor?
-	var targetNodeText = targetNode.childNodes[0];//get the text of the subnode our cursor is in
-	
-	var span = document.createElement("span"); //create a helper span
-	span.appendChild(document.createTextNode('X'));//…and give it a content. 
-	
-	if(targetNodeText.length>2){//if there is text long enough to insert something in between…
-		targetNode.insertBefore(span, targetNodeText.splitText(leftoverString));
-	}else{//otherwise, just insert without the split.
-		targetNode.insertBefore(span,targetNodeText)
-	}
-	var position = span.getBoundingClientRect();//now, get the rectangle.
-	clone.remove();
-	
-	return position;
+
+		var leftoverString = $(targetNode).text().length - (counter-context.rep.selEnd[1]); //how many characters are between the start of the element and the cursor?
+		var targetNodeText = targetNode.childNodes[0];//get the text of the subnode our cursor is in
+
+		var span = document.createElement("span"); //create a helper span
+		span.appendChild(document.createTextNode('X'));//…and give it a content.
+
+		if(targetNodeText.length>2){//if there is text long enough to insert something in between…
+			targetNode.insertBefore(span, targetNodeText.splitText(leftoverString));
+		}else{//otherwise, just insert without the split.
+			targetNode.insertBefore(span,targetNodeText)
+		}
+		var position = span.getBoundingClientRect();//now, get the rectangle.
+		clone.remove(); //clean up again.
+
+		return position;
 
 	},
 	getParam: function(sname)
-	{	/*
+	{
+	/*
 	for getting URL parameters
 	sname is the requested key
 	returned is the keys value
@@ -180,6 +188,7 @@ var autocomp = {
 	so if you have http://www.someurl.end?foo=bar
 	it will return "bar" if you give it "foo"
 	*/
+	var temp;
 	var params = location.search.substr(location.search.indexOf("?")+1); //"?" devides the actual URL from the parameters
 	var sval = "";
 	params = params.split("&"); //"&" devides the kex/value pairs
