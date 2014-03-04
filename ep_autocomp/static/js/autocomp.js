@@ -22,11 +22,47 @@ var autocomp = {
 	},
 	
 	showAutocomp:function(){
-		//determine position
-		
-		//fill in list
 		
 	
+
+
+	},
+	createAutocompHTML:function(filteredSuggestions,cursorPosition){
+	/*
+	creates the dom element for the menu.
+
+	gets:
+	filteredSuggestions: an array containing objects like
+		{
+			fullText: string containing the full text, e.g. "nightingale"
+			complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
+		}
+	cursorPosition: an getBoundingClientRect() with the properties top and left in pixel.
+
+	returns: ?
+	*/
+		//CREATE DOM ELEMENTS
+		var listEntries = [];
+		$.each(filteredSuggestions, function(index,suggestion){
+			// create a dom element (li) for each suggestion
+			listEntries.push(
+				$("<li/>",{
+					"class":"ep_autocomp-listentry", //TODO: move this to a config object
+					"text":suggestion.fullText
+				}).data(
+					"complementary":filteredSuggestions.complementaryString //give the complementary string along.
+				); //end $
+			); //end push
+		}); //end each-function
+
+		$(listEntries[0]).addClass("ep_autocomp-selectedItem");//give the first element a class that marks it as selected
+
+		$("<ul/>",{//create the container element for the list items and…
+			"class":"ep_autocomp-list",
+			"style":"position:absolute; top: "+(cursorPosition.top+23)+"px"+"; "+"left:"cursorPosition.top+"px", //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit.
+		}).
+		append(listEntries).//...append all list entries holding the suggestions
+		appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom
 	},
 	hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
@@ -52,6 +88,9 @@ var autocomp = {
 		}
 	},
 	aceEditEvent:function(type, context, cb){ 
+		autocomp.update(type, context, cb);
+	},
+	update:function(type, context, cb){
 		//remove from here into checkForAutocomp or so. Usecase: use ←↓↑→ to navigate the code will not cause edit events. 
 		if(context.rep.selStart === null){return;}
 		if(autocomp.isEditByMe(context)!==true){return;} //as edit event is called when anyone edits, we must ensure it is the current user
@@ -72,7 +111,8 @@ var autocomp = {
 		
 		suggestions = autocomp.getPossibleSuggestions();
 		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions); //To be implemented
-		autocomp.showAutocomp(filteredSuggestions);
+		var cursorPosition = autocomp.cursorPosition(context);
+		autocomp.createAutocompHTML(filteredSuggestions,cursorPosition);
 	},
 	filterSuggestionList:function(relevantSection,possibleSuggestions){
 		/*
