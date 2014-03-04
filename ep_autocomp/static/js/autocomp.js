@@ -62,7 +62,7 @@ var autocomp = {
 
 		$("<ul/>",{//create the container element for the list items and…
 			"class":"ep_autocomp-list",
-			"style":("position:absolute; top:"+(cursorPosition.top+23)+"px"+"; "+"left:"+cursorPosition.top+"px") //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit.
+			"style":("position:absolute; top:"+(cursorPosition.top+23)+"px"+"; "+"left:"+cursorPosition.top+"px") //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit. Dont remove the () otherwise e.g. 10+23 are not arithmetical 33 but string-added to 1023, causing the menu to go somewhat remote.
 		}).
 		append(listEntries). //...append all list entries holding the suggestions
 		appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom
