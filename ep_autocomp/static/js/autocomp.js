@@ -9,6 +9,10 @@ $('#taglistButton').click(function(){
   $('#taglist').toggle();
 });
 */
+
+var $autocomp
+  , $list
+
 var autocomp = {
 	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
 	isEnabled: true,//this could be getter/Setter too
@@ -21,12 +25,26 @@ var autocomp = {
 		
 	},
 	
-	showAutocomp:function(){
-		//determine position
-		
-		//fill in list
-		
+	showAutocomp:function(context, suggestions){
+	  if(!$autocomp) {
+	    var $outerdocbody = $('iframe[name="ace_outer"]').contents().find('#outerdocbody')
+	    $autocomp = $('<div id="autocomp" style="position: absolute;display: none;z-index: 10;"><div id="autocompItems"></div></div>')
+	    $list = $autocomp.find('#autocompItems')
+	    $outerdocbody.append($autocomp)
+	  }
 	
+		var pos = autocomp.cursorPosition(context)
+		
+		$autocomp
+		  .show()
+		  .css({top: pos.top, left: pos.left})
+		
+		$list.empty()
+		
+		suggestions.forEach(function(suggestion) {
+		  $list.append('<p>'+suggestion.complementaryString+'</p>')
+		})
+		
 	},
 	hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
@@ -72,7 +90,7 @@ var autocomp = {
 		
 		suggestions = autocomp.getPossibleSuggestions();
 		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions); //To be implemented
-		autocomp.showAutocomp(filteredSuggestions);
+		autocomp.showAutocomp(context, filteredSuggestions);
 	},
 	filterSuggestionList:function(relevantSection,possibleSuggestions){
 		/*
@@ -165,7 +183,7 @@ var autocomp = {
 	}else{//otherwise, just insert without the split.
 		targetNode.insertBefore(span,targetNodeText)
 	}
-	var position = span.getBoundingClientRect();//now, get the rectangle.
+	var position = $(span).offset();//now, get the rectangle.
 	clone.remove();
 	
 	return position;

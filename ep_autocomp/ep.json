@@ -6,7 +6,6 @@
         "eejsBlock_scripts"          : "ep_autocomp/index",
         "eejsBlock_styles"           : "ep_autocomp/index",
         "eejsBlock_mySettings"       : "ep_autocomp/index",
-        "eejsBlock_body"             : "ep_autocomp/index",
         "eejsBlock_dd_view"          : "ep_autocomp/index"
       },
       "client_hooks":{
