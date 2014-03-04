@@ -16,6 +16,14 @@ var autocomp = {
 	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
 	isEnabled: true,//this could be getter/Setter too
 	isShown: false,
+	tempDisabled:false,
+	tempDisabledHelper:function(){
+		autocomp.tempDisabled = true;
+		window.setTimeout(function(){
+			autocomp.tempDisabled=false;
+		},100);
+	},
+
 	enable: function(){ //show suggenstions
 		
 	},
@@ -79,7 +87,10 @@ var autocomp = {
 	},
 	hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
-		if(!autocomp||!context){//precaution
+		if(!$autocomp||!context){//precaution
+			return;
+		}
+		if(autocomp.tempDisabled){
 			return;
 		}
 
@@ -96,6 +107,7 @@ var autocomp = {
 				if(textToInsert){
 					$(currEl).sendkeys(textToInsert);
 					context.evt.preventDefault();
+					autocomp.tempDisabledHelper();
 					return true; // returnvalue should be true if the event was handled. So we return a true which can be returned by the hook itself consequently. A bit FUD here.
 				}//END if textToInsert
 			}//END if enter
@@ -106,6 +118,7 @@ var autocomp = {
 					$list.children(".selected").removeClass("selected").prev().addClass("selected");
 
 				}
+				autocomp.tempDisabledHelper();
 				context.evt.preventDefault();
 				return true;
 
@@ -115,18 +128,24 @@ var autocomp = {
 				if(!($list.children().last().hasClass("selected"))){//only do it if the selection is not on the last element already
 					$list.children(".selected").removeClass("selected").next().addClass("selected");
 				}
+				autocomp.tempDisabledHelper();
 				context.evt.preventDefault();
 				return true;
 			}
 			//ESCAPE
 			if(context.evt.which === 27){
+				autocomp.tempDisabledHelper();
+				context.evt.preventDefault();
 				$autocomp.hide();
+				return true;
 			}
 		}
 		
 		if($autocomp.is(":hidden")){
 			if(context.evt.which === 32 && context.evt.ctrlKey){
 				autocomp.update(type,context);
+				autocomp.tempDisabledHelper();
+				return true;
 			}
 		}
 		
@@ -162,6 +181,7 @@ var autocomp = {
 		
 		
 		if(!(relevantSection.length>0)){ //return if either the string in front or the string after the caret are not suitable. 
+			$autocomp.hide();
 			return;
 		}
 		
