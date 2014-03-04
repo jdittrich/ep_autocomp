@@ -25,8 +25,7 @@ var autocomp = {
 	},
 	
 	showAutocomp:function(){
-		
-	
+
 
 
 	},
@@ -50,13 +49,7 @@ var autocomp = {
 		if(filteredSuggestions.length===0){
 			$autocomp.hide();
 		}
-		//remove menu
-		if(!$autocomp) {
-			var $outerdocbody = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
-			$autocomp = $('<div id="autocomp" style="position: absolute;display: none;z-index: 10;"><div id="autocompItems"></div></div>');
-			$list = $autocomp.find('#autocompItems');
-			$outerdocbody.append($autocomp);
-		}
+
 		
 		$list.empty();
 		
@@ -71,11 +64,11 @@ var autocomp = {
 					"class":"ep_autocomp-listentry", //TODO: move this to a config object
 					"text":suggestion.fullText
 				}).data(
-					"complementary",filteredSuggestions.complementaryString //give the complementary string along.
+					"complementary",suggestion.complementaryString //give the complementary string along.
 				)//end $
 			); //end push
 		}); //end each-function
-		
+		$(listEntries[0]).addClass("selected");
 
 		$list.append(listEntries); //...append all list entries holding the suggestions
 		//appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom //remove this
@@ -86,18 +79,61 @@ var autocomp = {
 	},
 	hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
+		if(!autocomp||!context){//precaution
+			return;
+		}
+
 		//if not menu not shown, dont prevent defaults
 		
 		//if key is ↑ , choose next option, prevent default
 		//if key is ↓ , choose next option, prevent default
 		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again. 
+		if($autocomp.is(":visible")){
+			//ENTER
+			if(context.evt.which === 13){
+				var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
+				var currEl = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode; //the element the cursor is in
+				if(textToInsert){
+					$(currEl).sendkeys(textToInsert);
+					context.evt.preventDefault();
+					return true; // returnvalue should be true if the event was handled. So we return a true which can be returned by the hook itself consequently. A bit FUD here.
+				}//END if textToInsert
+			}//END if enter
+
+			//UP
+			if(context.evt.which === 38){
+				if(!($list.children().first().hasClass("selected"))){//only do it if the selection is not on the first element already
+					$list.children(".selected").removeClass("selected").prev().addClass("selected");
+
+				}
+				context.evt.preventDefault();
+				return true;
+
+			}
+			//DOWN
+			if(context.evt.which === 40){
+				if(!($list.children().last().hasClass("selected"))){//only do it if the selection is not on the last element already
+					$list.children(".selected").removeClass("selected").next().addClass("selected");
+				}
+				context.evt.preventDefault();
+				return true;
+			}
+			//ESCAPE
+			if(context.evt.which === 27){
+				$autocomp.hide();
+			}
+		}
 		
-		
+		if($autocomp.is(":hidden")){
+			if(context.evt.which === 32 && context.evt.ctrlKey){
+				autocomp.update(type,context);
+			}
+		}
 		
 		
 		if(context.evt.which===89 && autocomp.isEnabled===true)
 		{
-			var curEl = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
+
 
 			//$(curEl).sendkeys('he ho I pressed Y!');
 

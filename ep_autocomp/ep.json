@@ -12,7 +12,7 @@
         "aceEditEvent"           	: "ep_autocomp/static/js/aceEditEvent:aceEditEvent",
         "aceKeyEvent"           	: "ep_autocomp/static/js/aceKeyEvent:aceKeyEvent",
         "postAceInit"             	: "ep_autocomp/static/js/postAceInit:postAceInit",
-		"aceEditorCSS"				: "ep_tasklist/static/js/autocomp:aceEditorCSS",
+		"aceEditorCSS"				: "ep_autocomp/static/js/aceEditorCSS:aceEditorCSS"
       }
     }
   ]

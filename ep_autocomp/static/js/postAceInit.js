@@ -1,9 +1,16 @@
 exports.postAceInit = function(type, context){
-	$.getScript("../static/plugins/ep_autocomp/static/js/lib	/jquery_sendkeys.js", function(){});
+	var $ = require('ep_etherpad-lite/static/js/rjquery').$; //it rjquery is a bridge in order to make jquery require-able
+	$.getScript("../static/plugins/ep_autocomp/static/js/lib/jquery_sendkeys.js", function(){});
 	/*
 	Determines if the functionality is activated or not. 
 	*/
 	
+	if(!$autocomp) {
+			var $outerdocbody = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
+			$autocomp = $('<div id="autocomp" style="position: absolute;display: none;z-index: 10;"><div id="autocompItems"></div></div>');
+			$list = $autocomp.find('#autocompItems');
+			$outerdocbody.append($autocomp);
+	}
 	
   /* on click */
   //  "#options-autocomp" is simply the id/selector of the input with the checkbox determining if autocomp is toggled or not. 

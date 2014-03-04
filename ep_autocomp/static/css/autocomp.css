@@ -1,11 +1,11 @@
-.ep_autocomp-list{
+#autocomp{
 	background:white;
 }
 
-.ep_autocomp-list li{
+#autocomp li{
 	list-style-type: none;
 }
 
-.ep_autocomp-list .ep_autocomp-selectedItem{
+#autocomp li.selected{
 	background-color: #adcdd9;
 }
