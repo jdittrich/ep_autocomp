@@ -41,7 +41,9 @@ var autocomp = {
 
 	returns: ?
 	*/
-		if(!filteredSuggestions||!cursorPosition){return} //precaution
+		if(!filteredSuggestions||!cursorPosition){
+			console.log("insufficent attributes")
+			return} //precaution
 		//remove menu
 		$('iframe[name="ace_outer"]').contents().find('#outerdocbody').find(".ep_autocomp-list").remove();
 		console.log(cursorPosition.top, cursorPosition.left);
@@ -207,8 +209,9 @@ var autocomp = {
 				return false; //stop jquery each by returning false
 			}
 		});
-		if (!targetNode){
-			throw "no target node found";
+		if (!targetNode){ //this happens usually if you are in a headline e.g.
+			console.log("no target node found");
+			return;
 		}
 		var leftoverString = $(targetNode).text().length - (counter-context.rep.selEnd[1]); //how many characters are between the start of the element and the cursor?
 		var targetNodeText = targetNode.childNodes[0] || "";//get the text of the subnode our cursor is in. FIX: I sometimes get a targetNo
