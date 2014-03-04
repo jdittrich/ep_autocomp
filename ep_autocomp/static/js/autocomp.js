@@ -41,9 +41,10 @@ var autocomp = {
 
 	returns: ?
 	*/
+		if(!filteredSuggestions||!cursorPosition){return} //precaution
 		//remove menu
 		$('iframe[name="ace_outer"]').contents().find('#outerdocbody').find(".ep_autocomp-list").remove();
-
+		console.log(cursorPosition.top, cursorPosition.left);
 		//CREATE DOM ELEMENTS
 		var listEntries = [];
 		$.each(filteredSuggestions, function(index,suggestion){
@@ -58,11 +59,13 @@ var autocomp = {
 			); //end push
 		}); //end each-function
 
-		$(listEntries[0]).addClass("ep_autocomp-selectedItem");//give the first element a class that marks it as selected
+		$(listEntries[0]).attr("data-ep_autocomp_selection","true"); //give the first element a class that marks it as selected
+
+
 
 		$("<ul/>",{//create the container element for the list items and…
 			"class":"ep_autocomp-list",
-			"style":("position:absolute; top:"+(cursorPosition.top+23)+"px"+"; "+"left:"+cursorPosition.top+"px") //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit. Dont remove the () otherwise e.g. 10+23 are not arithmetical 33 but string-added to 1023, causing the menu to go somewhat remote.
+			"style":("position:absolute; top:"+(cursorPosition.top)+"px"+"; "+"left:"+cursorPosition.left+"px") //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit. Dont remove the () otherwise e.g. 10+23 are not arithmetical 33 but string-added to 1023, causing the menu to go s$omewhat remote.
 		}).
 		append(listEntries). //...append all list entries holding the suggestions
 		appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom
@@ -196,7 +199,7 @@ var autocomp = {
 
 		//now we want to find the subnode (some span) it is in. 
 		var counter=0; //holds the added length of text of all subnodes parsed. 
-		var targetNode=null; //he subnode our cursor is in. 
+		var targetNode=null; //the subnode our cursor is in.
 		clone.children().each(function(index,element){
 			counter = counter+$(element).text().length;
 			if(counter>=context.rep.selEnd[1]){ //if the added text length is grater than the cursors position.
@@ -204,9 +207,11 @@ var autocomp = {
 				return false; //stop jquery each by returning false
 			}
 		});
-
+		if (!targetNode){
+			throw "no target node found";
+		}
 		var leftoverString = $(targetNode).text().length - (counter-context.rep.selEnd[1]); //how many characters are between the start of the element and the cursor?
-		var targetNodeText = targetNode.childNodes[0];//get the text of the subnode our cursor is in
+		var targetNodeText = targetNode.childNodes[0] || "";//get the text of the subnode our cursor is in. FIX: I sometimes get a targetNo
 
 		var span = document.createElement("span"); //create a helper span
 		span.appendChild(document.createTextNode('X'));//…and give it a content.
@@ -216,10 +221,14 @@ var autocomp = {
 		}else{//otherwise, just insert without the split.
 			targetNode.insertBefore(span,targetNodeText)
 		}
-		var position = span.getBoundingClientRect();//now, get the rectangle.
+		var position = $(span).offset();
+		var scrollYPos= $('iframe[name="ace_outer"]').contents().scrollTop();
 		clone.remove(); //clean up again.
 
-		return position;
+		return {
+			top: (position.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
+			left:position.left
+		};
 
 	},
 	getParam: function(sname)
