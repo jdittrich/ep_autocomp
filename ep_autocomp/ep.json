@@ -9,9 +9,10 @@
         "eejsBlock_dd_view"          : "ep_autocomp/index"
       },
       "client_hooks":{
-        "aceEditEvent"           : "ep_autocomp/static/js/aceEditEvent:aceEditEvent",
-        "aceKeyEvent"           : "ep_autocomp/static/js/aceKeyEvent:aceKeyEvent",
-        "postAceInit"             : "ep_autocomp/static/js/postAceInit:postAceInit"
+        "aceEditEvent"           	: "ep_autocomp/static/js/aceEditEvent:aceEditEvent",
+        "aceKeyEvent"           	: "ep_autocomp/static/js/aceKeyEvent:aceKeyEvent",
+        "postAceInit"             	: "ep_autocomp/static/js/postAceInit:postAceInit",
+		"aceEditorCSS"				: "ep_tasklist/static/js/autocomp:aceEditorCSS",
       }
     }
   ]

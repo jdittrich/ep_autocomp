@@ -47,6 +47,9 @@ var autocomp = {
 		if(!filteredSuggestions||!cursorPosition){
 			console.log("insufficent attributes");
 			return;} //precaution
+		if(filteredSuggestions.length===0){
+			$autocomp.hide();
+		}
 		//remove menu
 		if(!$autocomp) {
 			var $outerdocbody = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
@@ -78,9 +81,8 @@ var autocomp = {
 		//appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom //remove this
 		
 		$autocomp
-		  .show()
-		  .css({top: cursorPosition.top, left: cursorPosition.left})
-
+			.show()
+			.css({top: cursorPosition.top, left: cursorPosition.left})
 	},
 	hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
@@ -285,5 +287,4 @@ var autocomp = {
 	}
 	
 };
-
 
