@@ -9,6 +9,9 @@ $('#taglistButton').click(function(){
   $('#taglist').toggle();
 });
 */
+
+var $autocomp, $list;
+
 var autocomp = {
 	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
 	isEnabled: true,//this could be getter/Setter too
@@ -42,11 +45,20 @@ var autocomp = {
 	returns: ?
 	*/
 		if(!filteredSuggestions||!cursorPosition){
-			console.log("insufficent attributes")
-			return} //precaution
+			console.log("insufficent attributes");
+			return;} //precaution
 		//remove menu
-		$('iframe[name="ace_outer"]').contents().find('#outerdocbody').find(".ep_autocomp-list").remove();
+		if(!$autocomp) {
+			var $outerdocbody = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
+			$autocomp = $('<div id="autocomp" style="position: absolute;display: none;z-index: 10;"><div id="autocompItems"></div></div>');
+			$list = $autocomp.find('#autocompItems');
+			$outerdocbody.append($autocomp);
+		}
+		
+		$list.empty();
+		
 		console.log(cursorPosition.top, cursorPosition.left);
+		
 		//CREATE DOM ELEMENTS
 		var listEntries = [];
 		$.each(filteredSuggestions, function(index,suggestion){
@@ -60,17 +72,15 @@ var autocomp = {
 				)//end $
 			); //end push
 		}); //end each-function
+		
 
-		$(listEntries[0]).attr("data-ep_autocomp_selection","true"); //give the first element a class that marks it as selected
+		$list.append(listEntries); //...append all list entries holding the suggestions
+		//appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom //remove this
+		
+		$autocomp
+		  .show()
+		  .css({top: cursorPosition.top, left: cursorPosition.left})
 
-
-
-		$("<ul/>",{//create the container element for the list items and…
-			"class":"ep_autocomp-list",
-			"style":("position:absolute; top:"+(cursorPosition.top)+"px"+"; "+"left:"+cursorPosition.left+"px") //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit. Dont remove the () otherwise e.g. 10+23 are not arithmetical 33 but string-added to 1023, causing the menu to go s$omewhat remote.
-		}).
-		append(listEntries). //...append all list entries holding the suggestions
-		appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom
 	},
 	hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
@@ -118,7 +128,8 @@ var autocomp = {
 		}
 		
 		suggestions = autocomp.getPossibleSuggestions();
-		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions); //To be implemented
+		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions); 
+		
 		var cursorPosition = autocomp.cursorPosition(context);
 		autocomp.createAutocompHTML(filteredSuggestions,cursorPosition);
 	},
@@ -209,6 +220,7 @@ var autocomp = {
 				return false; //stop jquery each by returning false
 			}
 		});
+		
 		if (!targetNode){ //this happens usually if you are in a headline e.g.
 			console.log("no target node found");
 			return;
@@ -232,7 +244,6 @@ var autocomp = {
 			top: (position.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
 			left:position.left
 		};
-
 	},
 	getParam: function(sname)
 	{

@@ -14,12 +14,6 @@ exports.eejsBlock_dd_view = function (hook_name, args, cb) {
   return cb();
 }
 
-exports.eejsBlock_body = function (hook_name, args, cb) {
-  args.content = args.content + eejs.require("ep_autocomp/templates/autocomp.ejs", {}, module);
-  return cb();
-}
-
-
 exports.eejsBlock_scripts = function (hook_name, args, cb) {
   args.content += "<script src='../static/plugins/ep_autocomp/static/js/autocomp.js'></script>";
   return cb();
