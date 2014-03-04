@@ -41,6 +41,9 @@ var autocomp = {
 
 	returns: ?
 	*/
+		//remove menu
+		$('iframe[name="ace_outer"]').contents().find('#outerdocbody').find(".ep_autocomp-list").remove();
+
 		//CREATE DOM ELEMENTS
 		var listEntries = [];
 		$.each(filteredSuggestions, function(index,suggestion){
@@ -50,8 +53,8 @@ var autocomp = {
 					"class":"ep_autocomp-listentry", //TODO: move this to a config object
 					"text":suggestion.fullText
 				}).data(
-					"complementary":filteredSuggestions.complementaryString //give the complementary string along.
-				); //end $
+					"complementary",filteredSuggestions.complementaryString //give the complementary string along.
+				)//end $
 			); //end push
 		}); //end each-function
 
@@ -59,9 +62,9 @@ var autocomp = {
 
 		$("<ul/>",{//create the container element for the list items and…
 			"class":"ep_autocomp-list",
-			"style":"position:absolute; top: "+(cursorPosition.top+23)+"px"+"; "+"left:"cursorPosition.top+"px", //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit.
+			"style":("position:absolute; top:"+(cursorPosition.top+23)+"px"+"; "+"left:"+cursorPosition.top+"px") //cursor position value s to set the position, so the menu appears at the text. cursorPosition.top+15 to give it some space on the top, otherwise it would overlay the text we edit.
 		}).
-		append(listEntries).//...append all list entries holding the suggestions
+		append(listEntries). //...append all list entries holding the suggestions
 		appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom
 	},
 	hideAutocomp:function(){},
@@ -141,8 +144,9 @@ var autocomp = {
 			}
 		});
 		
-		var filteredSuggestionsSorted=underscore.sortBy(filteredSuggestions,function(suggestion){return suggestion.fullText}); 		   //sort suggestions by the fullText attribute
-		//sort it (if the list remains static, this could be done only once
+		var filteredSuggestionsSorted= underscore.sortBy(filteredSuggestions,function(suggestion){ //sort it (if the list remains static, this could be done only once
+			return suggestion.fullText; //sort suggestions by the fullText attribute
+		});
 		
 		console.log(relevantSection,filteredSuggestionsSorted);
 		return filteredSuggestionsSorted;
@@ -173,7 +177,7 @@ var autocomp = {
 		var nodeToFind = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
 		var clone = nodeToFind.clone(); //clone the node the cursor is in
 		var computedCSS= window.getComputedStyle(nodeToFind[0]); //get the "real" css styles.
-		var p = 	nodeToFind.position(); //get the source nodes position
+		var p = nodeToFind.position(); //get the source nodes position
 		clone.attr("id","tempPosId");//change the id…
 		clone.css({ //apply the styles (todo: do it for subnodes as well
 			"position":"absolute",
