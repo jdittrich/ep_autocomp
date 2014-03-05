@@ -1,9 +1,15 @@
 #autocomp{
-	background:white;
+	box-shadow: box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+	overflow-x: visible;
+	overflow-y: scroll;
+	max-height: 300px;
 }
 
 #autocomp li{
 	list-style-type: none;
+	font-size:12px;
+	padding-left:5px;
+	background-color:rgba(255, 255, 255, 0.61);
 }
 
 #autocomp li.selected{

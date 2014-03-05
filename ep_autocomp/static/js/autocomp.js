@@ -132,7 +132,7 @@ var autocomp = {
 				context.evt.preventDefault();
 				return true;
 			}
-			//ESCAPE
+			//ESCAPE TODO: This is not caught. Better we add a close button. For more info see context.evt.which === 32 && context.evt.ctrlKey
 			if(context.evt.which === 27){
 				autocomp.tempDisabledHelper();
 				context.evt.preventDefault();
@@ -141,15 +141,15 @@ var autocomp = {
 			}
 		}
 		
-		if($autocomp.is(":hidden")){
-			if(context.evt.which === 32 && context.evt.ctrlKey){
+		if($autocomp.is(":hidden")){ //TODO: lets rather toggle the menu here. No "hidden" needed. As well a good idea since escape is not send. 
+			if(context.evt.which === 32 && context.evt.ctrlKey){ 
 				autocomp.update(type,context);
 				autocomp.tempDisabledHelper();
 				return true;
 			}
 		}
 		
-		
+		/* TODO: remove this was testcode
 		if(context.evt.which===89 && autocomp.isEnabled===true)
 		{
 
@@ -160,7 +160,7 @@ var autocomp = {
 			window.setTimeout(function(){autocomp.isEnabled=true; console.log("reenabled");},1000);
 			context.evt.preventDefault();
 			return true; // returnvalue should be true if the event was handled. So we return a true which can be returned by the hook itself consequently. A bit FUD here. 
-		}
+		}*/
 	},
 	aceEditEvent:function(type, context, cb){ 
 		autocomp.update(type, context, cb);
@@ -203,7 +203,6 @@ var autocomp = {
 			complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
 		}
 		
-
 		*/
 		
 		//filter it
@@ -218,12 +217,13 @@ var autocomp = {
 			}
 		});
 		
+		/* //AS POSSIBLE SUGGESTIONS ALREADY SORTS, I COMMENTED IT OUT;  TODO: delete this if code works
 		var filteredSuggestionsSorted= underscore.sortBy(filteredSuggestions,function(suggestion){ //sort it (if the list remains static, this could be done only once
 			return suggestion.fullText; //sort suggestions by the fullText attribute
-		});
+		});*/
 		
 		console.log(relevantSection,filteredSuggestionsSorted);
-		return filteredSuggestionsSorted;
+		return filteredSuggestions; //return filteredSuggestionsSorted; TODO: delete this if code works
 	},
 	cursorPosition:function(context){
 		/*
@@ -338,8 +338,30 @@ var autocomp = {
 			return false;
 		}
 	},
-	getPossibleSuggestions:function(){
-		return ["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"];
+	getPossibleSuggestions:function(context){
+		var hardcodedSuggestions =  ["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"]; //NOTE: insert 
+		var dynamicSuggestions=[];
+		
+		if(context && context.rep.lines.allLines){
+			/*
+			NOTE:
+			Here you can write code to fill the dynamicSuggestions array.
+			The array must be a one-dimensional array containing only string values!
+			*/
+			var allText = contex.rep.lines.allLines; //contains all the text from the document in a string. 
+			
+			dynamicSuggestions.concat(allText.match(/(#\w+)+/g) ||[] ); //chains of hashtags. if you got "abc #first#second" you'll get "#first#second" 
+			dynamicSuggestions.concat(allText.match(/(#\w+)/)||[] );//single tags. if you got "abc #first#second" you'll get "#first","#second"
+			
+			//EXAMPLE REGEXES:
+			//get all hashtags: /(#\w+)+/g
+		    //natural word matches:  /(\w+)+/g
+			//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
+		
+		}//end if(context && context.rep.lines.allLines){
+		return underscore.uniq(
+			hardcodedSuggestions.concat(dynamicSuggestions).sort(),
+		true); 	 
 	}
 	
 };
