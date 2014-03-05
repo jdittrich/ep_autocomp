@@ -1,6 +1,7 @@
 # Autocompletion 
+It’s very alpha... but the concept works. 
+Please contribute and/or file bugs. 
 
-Enable under settings
 
 #License
 Copyright 2014, John McLear
