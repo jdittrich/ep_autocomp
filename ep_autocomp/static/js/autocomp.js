@@ -16,6 +16,15 @@ var autocomp = {
 	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
 	//isEnabled: true,//this could be getter/Setter too
 	//isShown: false,
+	config:{
+		hardcodedSuggestions:["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
+		regexToFind:[/(#\w+)+/g, /(#\w+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
+		//EXAMPLE REGEXES:
+		// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
+		// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
+		//natural word matches:  /(\w+)+/g
+		//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
+	},
 	tempDisabled:false, //Dirty Hack. See autocomp.tempDisabledHelper and autocomp.aceKeyEvent
 	tempDisabledHelper:function(){
 		//this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice, 
@@ -377,15 +386,10 @@ var autocomp = {
 		}
 	},
 	getPossibleSuggestions:function(context){
-		var hardcodedSuggestions =  ["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"]; //NOTE: insert your static suggestions here. 
-		var dynamicSuggestions=[];
-		var regexToFind=[/(#\w+)+/g, /(#\w+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
-		//EXAMPLE REGEXES:
-		// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second" 
-		// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
-		//natural word matches:  /(\w+)+/g
-		//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
+		var hardcodedSuggestions =  autocomp.config.hardcodedSuggestions;
+		var regexToFind=autocomp.config.regexToFind;
 		
+		var dynamicSuggestions=[];
 		
 		if(context && context.rep.alltext){
 			/*
