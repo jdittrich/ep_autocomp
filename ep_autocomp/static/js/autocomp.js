@@ -106,7 +106,7 @@ var autocomp = {
 			if(context.evt.which === 13){
 				var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
 				var currEl = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode; //the element the cursor is in
-				if(textToInsert){
+				if(textToInsert!==undefined){
 					$(currEl).sendkeys(textToInsert);
 					$autocomp.hide();
 					context.evt.preventDefault();
@@ -205,12 +205,12 @@ var autocomp = {
 		var relevantSection = textBeforeCaret.match(sectionMarker)[0]; 
 		
 		
-		if(relevantSection.length===0)){ //return if either the string in front or the string after the caret are not suitable. 
+		if(relevantSection.length===0){ //return if either the string in front or the string after the caret are not suitable.
 			$autocomp.hide();
 			return;
 		}
 		
-		suggestions = autocomp.getPossibleSuggestions();
+		suggestions = autocomp.getPossibleSuggestions(context);
 		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions); 
 		
 		if(filteredSuggestions.length===0){
@@ -239,7 +239,7 @@ var autocomp = {
 		var filteredSuggestions=[];
 		underscore.each(possibleSuggestions,function(possibleSuggestion, key, list){
 			if(typeof possibleSuggestion !=="string"){return;} //precaution
-			if(possibleSuggestion.indexOf(relevantSection)===0){ //indexOf === 0 means, in the possibleSuggestion is the (whole) relevant section and it starts at the begin of the possibleSuggestion 
+			if(possibleSuggestion.indexOf(relevantSection)===0 && possibleSuggestion!==relevantSection){ //indexOf === 0 means, the relevantSection starts at the begin of the possibleSuggestion. possibleSuggestion!==relevantSection causes a true if the two are not the same, otherwise we would autocomplete "abc" with "abc"
 				var complementaryString = possibleSuggestion.slice(relevantSection.length)
 				filteredSuggestions.push({
 				"fullText":possibleSuggestion, 
@@ -373,16 +373,16 @@ var autocomp = {
 		var dynamicSuggestions=[];
 		var regexToFind=[/(#\w+)+/g, /(#\w+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
 		
-		if(context && context.rep.lines.allLines){
+		if(context && context.rep.alltext){
 			/*
 			NOTE:
 			Here you can write code to fill the dynamicSuggestions array.
 			The array must be a one-dimensional array containing only string values!
 			*/
-			var allText = contex.rep.lines.allLines; //contains all the text from the document in a string. 
+			var allText = context.rep.alltext; //contains all the text from the document in a string.
 			
-			underscore.each(regexToFind,function(index,regEx){
-				dynamicSuggestions.concat(allText.match(regEx)||[] ); 
+			underscore.each(regexToFind,function(regEx){
+				dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
 			})
 			
 			//EXAMPLE REGEXES:
