@@ -7,7 +7,7 @@ exports.postAceInit = function(type, context){
 	
 	if(!$autocomp) {
 			var $outerdocbody = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
-			$autocomp = $('<div id="autocomp" style="position: absolute;display: none;z-index: 10;"><div id="autocompItems"></div></div>');
+			$autocomp = $('<div id="autocomp" style="position: absolute;display: none;z-index: 10;"><ul id="autocompItems"></ul></div>');
 			$list = $autocomp.find('#autocompItems');
 			$outerdocbody.append($autocomp);
 	}
