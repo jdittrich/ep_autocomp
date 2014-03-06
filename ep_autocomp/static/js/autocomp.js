@@ -91,7 +91,8 @@ var autocomp = {
 			return;
 		}
 		if(autocomp.tempDisabled){
-			return;
+			context.evt.preventDefault();
+			return true;
 		}
 		
 		var offsetFromContainer;
@@ -141,11 +142,11 @@ var autocomp = {
 					next().
 					addClass("selected");
 					
-					offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height() 
+					offsetFromContainer = $list.children(".selected").position().top+$list.children(".selected").height() -  $autocomp.height();
 
 					//scroll element into view if needed.
-					if(offsetFromContainer< 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible. 
-						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
+					if(offsetFromContainer> 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible.
+						$autocomp.scrollTop($autocomp.scrollTop()+$list.children(".selected").height()+offsetFromContainer)
 					} //END if for out-of-view
 					
 				}//END if end of children
