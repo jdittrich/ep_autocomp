@@ -93,6 +93,8 @@ var autocomp = {
 		if(autocomp.tempDisabled){
 			return;
 		}
+		
+		var offsetFromContainer;
 
 		//if not menu not shown, dont prevent defaults
 		
@@ -106,6 +108,7 @@ var autocomp = {
 				var currEl = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode; //the element the cursor is in
 				if(textToInsert){
 					$(currEl).sendkeys(textToInsert);
+					$autocomp.hide();
 					context.evt.preventDefault();
 					autocomp.tempDisabledHelper();
 					return true; // returnvalue should be true if the event was handled. So we return a true which can be returned by the hook itself consequently. A bit FUD here.
@@ -116,6 +119,11 @@ var autocomp = {
 			if(context.evt.which === 38){
 				if(!($list.children().first().hasClass("selected"))){//only do it if the selection is not on the first element already
 					$list.children(".selected").removeClass("selected").prev().addClass("selected");
+					
+					offsetFromContainer = $list.children(".selected").position().top
+					if(offsetFromContainer< 0){//if position is negative, element is not (fully visible)  
+						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer) //note: scrolls to the top by lowering the number, since e.g. +(-10) will be -10
+					}
 
 				}
 				autocomp.tempDisabledHelper();
@@ -126,27 +134,44 @@ var autocomp = {
 			//DOWN
 			if(context.evt.which === 40){
 				if(!($list.children().last().hasClass("selected"))){//only do it if the selection is not on the last element already
-					$list.children(".selected").removeClass("selected").next().addClass("selected");
-				}
+					//move selected class to next element
+					$list.
+					children(".selected").
+					removeClass("selected").
+					next().
+					addClass("selected");
+					
+					offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height() 
+
+					//scroll element into view if needed.
+					if(offsetFromContainer< 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible. 
+						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
+					} //END if for out-of-view
+					
+				}//END if end of children
 				autocomp.tempDisabledHelper();
 				context.evt.preventDefault();
 				return true;
 			}
 			//ESCAPE TODO: This is not caught. Better we add a close button. For more info see context.evt.which === 32 && context.evt.ctrlKey
+			/*
 			if(context.evt.which === 27){
 				autocomp.tempDisabledHelper();
 				context.evt.preventDefault();
 				$autocomp.hide();
 				return true;
-			}
+			}*/
 		}
 		
-		if($autocomp.is(":hidden")){ //TODO: lets rather toggle the menu here. No "hidden" needed. As well a good idea since escape is not send. 
-			if(context.evt.which === 32 && context.evt.ctrlKey){ 
+		if(context.evt.which === 32 && context.evt.ctrlKey){ 
+			if($autocomp.is(":hidden")){
 				autocomp.update(type,context);
-				autocomp.tempDisabledHelper();
-				return true;
+				$autocomp.show();
+			}else{
+				$autocomp.hide();
 			}
+			autocomp.tempDisabledHelper();
+			return true;
 		}
 		
 		/* TODO: remove this was testcode
@@ -180,13 +205,18 @@ var autocomp = {
 		var relevantSection = textBeforeCaret.match(sectionMarker)[0]; 
 		
 		
-		if(!(relevantSection.length>0)){ //return if either the string in front or the string after the caret are not suitable. 
+		if(relevantSection.length===0)){ //return if either the string in front or the string after the caret are not suitable. 
 			$autocomp.hide();
 			return;
 		}
 		
 		suggestions = autocomp.getPossibleSuggestions();
 		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions); 
+		
+		if(filteredSuggestions.length===0){
+			$autocomp.hide();
+			return;
+		}
 		
 		var cursorPosition = autocomp.cursorPosition(context);
 		autocomp.createAutocompHTML(filteredSuggestions,cursorPosition);
@@ -222,7 +252,7 @@ var autocomp = {
 			return suggestion.fullText; //sort suggestions by the fullText attribute
 		});*/
 		
-		console.log(relevantSection,filteredSuggestionsSorted);
+		//console.log(relevantSection,filteredSuggestionsSorted);
 		return filteredSuggestions; //return filteredSuggestionsSorted; TODO: delete this if code works
 	},
 	cursorPosition:function(context){
@@ -339,8 +369,9 @@ var autocomp = {
 		}
 	},
 	getPossibleSuggestions:function(context){
-		var hardcodedSuggestions =  ["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"]; //NOTE: insert 
+		var hardcodedSuggestions =  ["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"]; //NOTE: insert your static suggestions here. 
 		var dynamicSuggestions=[];
+		var regexToFind=[/(#\w+)+/g, /(#\w+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
 		
 		if(context && context.rep.lines.allLines){
 			/*
@@ -350,11 +381,13 @@ var autocomp = {
 			*/
 			var allText = contex.rep.lines.allLines; //contains all the text from the document in a string. 
 			
-			dynamicSuggestions.concat(allText.match(/(#\w+)+/g) ||[] ); //chains of hashtags. if you got "abc #first#second" you'll get "#first#second" 
-			dynamicSuggestions.concat(allText.match(/(#\w+)/)||[] );//single tags. if you got "abc #first#second" you'll get "#first","#second"
+			underscore.each(regexToFind,function(index,regEx){
+				dynamicSuggestions.concat(allText.match(regEx)||[] ); 
+			})
 			
 			//EXAMPLE REGEXES:
-			//get all hashtags: /(#\w+)+/g
+			// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second" 
+			// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
 		    //natural word matches:  /(\w+)+/g
 			//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
 		
