@@ -14,10 +14,14 @@ var $autocomp, $list;
 
 var autocomp = {
 	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
-	isEnabled: true,//this could be getter/Setter too
-	isShown: false,
-	tempDisabled:false,
+	//isEnabled: true,//this could be getter/Setter too
+	//isShown: false,
+	tempDisabled:false, //Dirty Hack. See autocomp.tempDisabledHelper and autocomp.aceKeyEvent
 	tempDisabledHelper:function(){
+		//this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice,
+		//which causes unwanted actions. This function sets tempDisabled to true for a short time
+		//Thus preventing these double events.
+		//
 		autocomp.tempDisabled = true;
 		window.setTimeout(function(){
 			autocomp.tempDisabled=false;
@@ -32,11 +36,7 @@ var autocomp = {
 		
 	},
 	
-	showAutocomp:function(){
-
-
-
-	},
+	//showAutocomp:function(){},
 	createAutocompHTML:function(filteredSuggestions,cursorPosition){
 	/*
 	creates the dom element for the menu.
@@ -85,25 +85,27 @@ var autocomp = {
 			.show()
 			.css({top: cursorPosition.top, left: cursorPosition.left})
 	},
-	hideAutocomp:function(){},
+	//hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
 		if(!$autocomp||!context){//precaution
 			return;
 		}
-		if(autocomp.tempDisabled){
+
+		if(autocomp.tempDisabled){ //Dirty hack, see autocomp.tempDisabled and autocomp.tempDisabledHelper
 			context.evt.preventDefault();
 			return true;
 		}
 		
 		var offsetFromContainer;
 
-		//if not menu not shown, dont prevent defaults
+		//if not menu not shown, don't prevent defaults
 		
 		//if key is ↑ , choose next option, prevent default
 		//if key is ↓ , choose next option, prevent default
 		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again. 
+
 		if($autocomp.is(":visible")){
-			//ENTER
+			//ENTER PRESSED
 			if(context.evt.which === 13){
 				var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
 				var currEl = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode; //the element the cursor is in
@@ -116,7 +118,7 @@ var autocomp = {
 				}//END if textToInsert
 			}//END if enter
 
-			//UP
+			//UP PRESSED
 			if(context.evt.which === 38){
 				if(!($list.children().first().hasClass("selected"))){//only do it if the selection is not on the first element already
 					$list.children(".selected").removeClass("selected").prev().addClass("selected");
@@ -132,7 +134,7 @@ var autocomp = {
 				return true;
 
 			}
-			//DOWN
+			//DOWN PRESSED
 			if(context.evt.which === 40){
 				if(!($list.children().last().hasClass("selected"))){//only do it if the selection is not on the last element already
 					//move selected class to next element
@@ -164,6 +166,7 @@ var autocomp = {
 			}*/
 		}
 		
+		//SPACE AND CONTROL PRESSED
 		if(context.evt.which === 32 && context.evt.ctrlKey){ 
 			if($autocomp.is(":hidden")){
 				autocomp.update(type,context);
@@ -260,6 +263,7 @@ var autocomp = {
 		/*
 		gets: context object from a ace editor event (e.g. aceEditEvent)
 		returns: x and y value for the position of the cursor measured in pixel.
+		Should work in any other context too (if you need that functionality in another etherpad addon)
 
 		useful to know:
 		The structure inside the editor is usually:
@@ -326,7 +330,7 @@ var autocomp = {
 			targetNode.insertBefore(span,targetNodeText)
 		}
 		var position = $(span).offset();
-		var scrollYPos= $('iframe[name="ace_outer"]').contents().scrollTop();
+		var scrollYPos= $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position
 		clone.remove(); //clean up again.
 
 		return {
@@ -334,6 +338,7 @@ var autocomp = {
 			left:position.left
 		};
 	},
+
 	getParam: function(sname)
 	{
 	/*
@@ -356,13 +361,18 @@ var autocomp = {
 	}
 	return sval;
 	},
+
 	isEditByMe:function(context){
 		/*
 		determines if the edit is done on the authors client or by a collaborator
 		gets: context-objects
 		returns: boolean. true (edit is done by author), false (edit done by someone else)
 		*/
-		if (!context||!context.callstack){return}
+
+		/*
+		FIXME: find a better/more clean way to determine authorship.
+		*/
+		if (!context||!context.callstack){return} //precautiion
 		if (context.callstack.editEvent.eventType==="idleWorkTimer"){ //this is the only way I found to determine if an edit is caused by input from the current user or from a collaborator
 			return true
 		}else{
@@ -373,6 +383,12 @@ var autocomp = {
 		var hardcodedSuggestions =  ["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"]; //NOTE: insert your static suggestions here. 
 		var dynamicSuggestions=[];
 		var regexToFind=[/(#\w+)+/g, /(#\w+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
+		//EXAMPLE REGEXES:
+		// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
+		// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
+		//natural word matches:  /(\w+)+/g
+		//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
+
 		
 		if(context && context.rep.alltext){
 			/*
@@ -385,17 +401,12 @@ var autocomp = {
 			underscore.each(regexToFind,function(regEx){
 				dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
 			})
-			
-			//EXAMPLE REGEXES:
-			// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second" 
-			// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
-		    //natural word matches:  /(\w+)+/g
-			//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
 		
 		}//end if(context && context.rep.lines.allLines){
-		return underscore.uniq(
-			hardcodedSuggestions.concat(dynamicSuggestions).sort(),
-		true); 	 
+
+		return underscore.uniq(//uniq: prevent dublicate entrys
+			hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
+		true);//true, since input array is already sorted
 	}
 	
 };
