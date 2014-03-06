@@ -18,7 +18,7 @@ var autocomp = {
 	//isShown: false,
 	tempDisabled:false, //Dirty Hack. See autocomp.tempDisabledHelper and autocomp.aceKeyEvent
 	tempDisabledHelper:function(){
-		//this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice,
+		//this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice, 
 		//which causes unwanted actions. This function sets tempDisabled to true for a short time
 		//Thus preventing these double events.
 		//
@@ -90,10 +90,8 @@ var autocomp = {
 		if(!$autocomp||!context){//precaution
 			return;
 		}
-
 		if(autocomp.tempDisabled){ //Dirty hack, see autocomp.tempDisabled and autocomp.tempDisabledHelper
-			context.evt.preventDefault();
-			return true;
+			return;
 		}
 		
 		var offsetFromContainer;
@@ -103,7 +101,6 @@ var autocomp = {
 		//if key is ↑ , choose next option, prevent default
 		//if key is ↓ , choose next option, prevent default
 		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again. 
-
 		if($autocomp.is(":visible")){
 			//ENTER PRESSED
 			if(context.evt.which === 13){
@@ -144,11 +141,11 @@ var autocomp = {
 					next().
 					addClass("selected");
 					
-					offsetFromContainer = $list.children(".selected").position().top+$list.children(".selected").height() -  $autocomp.height();
+					offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height() 
 
 					//scroll element into view if needed.
-					if(offsetFromContainer> 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible.
-						$autocomp.scrollTop($autocomp.scrollTop()+$list.children(".selected").height()+offsetFromContainer)
+					if(offsetFromContainer< 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible. 
+						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
 					} //END if for out-of-view
 					
 				}//END if end of children
@@ -338,7 +335,7 @@ var autocomp = {
 			left:position.left
 		};
 	},
-
+	
 	getParam: function(sname)
 	{
 	/*
@@ -361,14 +358,14 @@ var autocomp = {
 	}
 	return sval;
 	},
-
+	
 	isEditByMe:function(context){
 		/*
 		determines if the edit is done on the authors client or by a collaborator
 		gets: context-objects
 		returns: boolean. true (edit is done by author), false (edit done by someone else)
 		*/
-
+		
 		/*
 		FIXME: find a better/more clean way to determine authorship.
 		*/
@@ -384,11 +381,11 @@ var autocomp = {
 		var dynamicSuggestions=[];
 		var regexToFind=[/(#\w+)+/g, /(#\w+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
 		//EXAMPLE REGEXES:
-		// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
+		// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second" 
 		// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
 		//natural word matches:  /(\w+)+/g
 		//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
-
+		
 		
 		if(context && context.rep.alltext){
 			/*
@@ -403,7 +400,6 @@ var autocomp = {
 			})
 		
 		}//end if(context && context.rep.lines.allLines){
-
 		return underscore.uniq(//uniq: prevent dublicate entrys
 			hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
 		true);//true, since input array is already sorted
