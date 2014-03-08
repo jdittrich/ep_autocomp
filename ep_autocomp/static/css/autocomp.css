@@ -19,6 +19,10 @@
 	min-width: 45px;
 }
 
+#autocomp:hover li{
+	opacity:0.2; /*to indicate that they are not clickable. See https://github.com/jdittrich/ep_autocomp/issues/3*/
+}
+
 #autocomp li.selected{
 	background-color: #adcdd9;
 }
