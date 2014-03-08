@@ -4,13 +4,19 @@
 	overflow-y: auto;
 	max-height: 200px;
 	background-color:rgb(255, 255, 255);
+	margin-top:16px;
+}
+
+#autocompItems{
+	margin:0;
+
 }
 
 #autocomp li{
 	list-style-type: none;
 	font-size:12px;
-	padding-left:5px;
-
+	padding:2px 5pc 2px 7px;
+	min-width: 45px;
 }
 
 #autocomp li.selected{
