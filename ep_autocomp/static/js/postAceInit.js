@@ -9,6 +9,10 @@ exports.postAceInit = function(type, context){
 		var $outerdocbody = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
 		$autocomp = $('<div id="autocomp" style="position: absolute;display: none;z-index: 10;"><ul id="autocompItems"></ul></div>');
 		$list = $autocomp.find('#autocompItems');
+
+		//react on clicks
+		//$autocomp.click this does not work. Inserting text via sendkeys throws a "TypeError: invalid 'in' operand ret._doc" in "ace2_common.js?callback=require.define". It seems to be connected to some focus stealing problem.
+
 		$outerdocbody.append($autocomp);
 	}
 	
