@@ -36,15 +36,6 @@ var autocomp = {
 			autocomp.tempDisabled=false;
 		},100);
 	},
-
-	enable: function(){ //show suggenstions
-		
-	},
-
-	disable: function(){//hide suggestions
-		
-	},
-	
 	//showAutocomp:function(){},
 	createAutocompHTML:function(filteredSuggestions,cursorPosition){
 	/*
@@ -92,7 +83,7 @@ var autocomp = {
 		
 		$autocomp
 			.show()
-			.css({top: cursorPosition.top, left: cursorPosition.left})
+			.css({top: cursorPosition.top, left: cursorPosition.left});
 	},
 	//hideAutocomp:function(){},
 	aceKeyEvent: function(type, context, cb){
@@ -102,6 +93,7 @@ var autocomp = {
 		if(autocomp.tempDisabled){ //Dirty hack, see autocomp.tempDisabled and autocomp.tempDisabledHelper
 			return;
 		}
+		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
 		
 		var offsetFromContainer;
 
@@ -198,10 +190,13 @@ var autocomp = {
 		}*/
 	},
 	aceEditEvent:function(type, context, cb){ 
+		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
 		autocomp.update(type, context, cb);
 	},
 	update:function(type, context, cb){
-		//remove from here into checkForAutocomp or so. Usecase: use ←↓↑→ to navigate the code will not cause edit events. 
+
+		//TODO: does this comment make any sense?: remove from here into checkForAutocomp or so. Usecase: use ←↓↑→ to navigate the code will not cause edit events.
+
 		if(context.rep.selStart === null){return;}
 		if(autocomp.isEditByMe(context)!==true){return;} //as edit event is called when anyone edits, we must ensure it is the current user
 		
