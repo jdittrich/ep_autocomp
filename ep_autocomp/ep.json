@@ -4,7 +4,7 @@
       "name": "autocomp",
       "hooks": {
         "eejsBlock_scripts"          : "ep_autocomp/index",
-        "eejsBlock_styles"           : "ep_autocomp/index",
+       /* "eejsBlock_styles"           : "ep_autocomp/index",*/
         "eejsBlock_mySettings"       : "ep_autocomp/index",
         "eejsBlock_dd_view"          : "ep_autocomp/index"
       },
@@ -12,7 +12,7 @@
         "aceEditEvent"           	: "ep_autocomp/static/js/aceEditEvent:aceEditEvent",
         "aceKeyEvent"           	: "ep_autocomp/static/js/aceKeyEvent:aceKeyEvent",
         "postAceInit"             	: "ep_autocomp/static/js/postAceInit:postAceInit",
-		"aceEditorCSS"				: "ep_autocomp/static/js/aceEditorCSS:aceEditorCSS"
+				"aceEditorCSS"				: "ep_autocomp/static/js/aceEditorCSS:aceEditorCSS"
       }
     }
   ]

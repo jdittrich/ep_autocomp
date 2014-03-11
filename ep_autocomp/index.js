@@ -4,10 +4,11 @@ var eejs	= require('ep_etherpad-lite/node/eejs'),
 //express		= require('ep_etherpad-lite/node_modules/express'), //todo: do I need express? 
 settings	= require('ep_etherpad-lite/node/utils/Settings');
 
+/* TODO: Delete if no problems occur
 exports.eejsBlock_styles = function (hook_name, args, cb) {
   args.content = args.content + "<link href='../static/plugins/ep_autocomp/static/css/autocomp.css' rel='stylesheet'>";
   return cb();
-}
+};*/
 
 exports.eejsBlock_dd_view = function (hook_name, args, cb) {
   args.content = args.content + "<li><a href='#' onClick='$(\"#options-autocomp\").click();'>Table Of Contents WhereAmI-1 </a></li>"; /*what do I need this for, how is it called?*/
