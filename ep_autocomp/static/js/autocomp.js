@@ -283,7 +283,7 @@ var autocomp = {
 		*/
 
 
-		//DELETE:  /*var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //move this out for performace reasons, rarely changes. */
+		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //possible move this out for performace reasons, rarely changes.
 
 		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x; 
 		var cursorDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
@@ -307,7 +307,7 @@ var autocomp = {
 		}).first().parent();
 
 		//find its position
-		var position = innermostNode.position();
+		var innermostNodeOffset = innermostNode.offset(); //was: position()
 
 		//get its styles (to reapply to a clone later)
 		var computedCSS= window.getComputedStyle(innermostNode);
@@ -325,8 +325,8 @@ var autocomp = {
 			padding:computedCSS.padding,
 			fontSize:computedCSS.fontSize,
 			lineHeight:computedCSS.lineHeight,
-			top:p.top+innerEditorPosition.top+"px" ,
-			left:p.left+innerEditorPosition.left+"px",
+			top:innermostNodeOffset.top+"px" , //old: position.top+innerEditorPosition.top+"px"
+			left:innermostNodeOffset.left+"px", //old: position.left+innerEditorPosition.left+"px"
 			background:"transparent",
 			color:"transparent",
 			display:"block"
@@ -351,8 +351,8 @@ var autocomp = {
 		clone.remove(); //clean up again.
 
 		return {
-			top: (position.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
-			left:position.left
+			top: (cursorPosition.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
+			left:cursorPosition.left
 		};
 
 		/////////////////////////////////////////////////////////////////
