@@ -327,6 +327,8 @@ var autocomp = {
 			margin:computedCSS.margin,
 			padding:computedCSS.padding,
 			fontSize:computedCSS.fontSize,
+			fontWeight:computedCSS.fontWeight,
+			fontFamily:computedCSS.fontFamily,
 			lineHeight:computedCSS.lineHeight,
 			top:childNodeOffset.top+innerEditorPosition.top+"px" , //old: position.top+innerEditorPosition.top+"px"
 			left:childNodeOffset.left+innerEditorPosition.left+"px", //old: position.left+innerEditorPosition.left+"px"
