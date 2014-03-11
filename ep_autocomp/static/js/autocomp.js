@@ -282,9 +282,94 @@ var autocomp = {
 		Than we clean up again, cause this is messy stuff.
 		*/
 
-		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //move this out for performace reasons, rarely changes. 
+
+		//DELETE:  /*var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //move this out for performace reasons, rarely changes. */
+
 		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x; 
-		var nodeToFind = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
+		var cursorDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
+
+		//now we want to find the subnode (some span) it is in.
+		var counter=0; //holds the added length of text of all subnodes parsed.
+		var childNode=null; //the subnode our cursor is in.
+
+		//find the child node the cursor is in
+		cursorDiv.children().each(function(index,element){
+			counter = counter+$(element).text().length;
+			if(counter>=context.rep.selEnd[1]){ //if the added text length is grater than the cursors position.
+				childNode = element;//… we found the subnode we wanted.
+				return false; //stop jquery each by returning false
+			}
+		});
+
+		//in the child node, find the innermost element. NOTE: as far as I'm concerned, there may be a lot of nested elements, but all around the same text like: <span><b><i>italic bold text</i></b></span>
+		var innermostNode = childNode.contents().filter(function(){
+				return this.nodeType === 3;
+		}).first().parent();
+
+		//find its position
+		var position = innermostNode.position();
+
+		//get its styles (to reapply to a clone later)
+		var computedCSS= window.getComputedStyle(innermostNode);
+
+		//clone it
+		var cloneInnermost = innermostNode.clone();
+
+		//apply all styles to it
+		clone.attr("id","tempPosId");//change the id…
+		clone.css({ //apply the styles (todo: do it for subnodes as well
+			"position":"absolute",
+			width:computedCSS.width,
+			heigth:computedCSS.height,
+			margin:computedCSS.margin,
+			padding:computedCSS.padding,
+			fontSize:computedCSS.fontSize,
+			lineHeight:computedCSS.lineHeight,
+			top:p.top+innerEditorPosition.top+"px" ,
+			left:p.left+innerEditorPosition.left+"px",
+			background:"transparent",
+			color:"transparent",
+			display:"block"
+		});
+
+		var leftoverString = clone.text().length - (counter-context.rep.selEnd[1]); //how many characters are between the start of the element and the cursor?
+		var targetNodeText = clone.text() || "";//get the text of the subnode our cursor is in. FIX: I sometimes get a targetNo
+
+		var span = document.createElement("span"); //create a helper span
+		span.appendChild(document.createTextNode('X'));//…and give it a content.
+
+		if(targetNodeText.length>2){//if there is text long enough to insert something in between…
+			clone.insertBefore(span, targetNodeText.splitText(leftoverString));
+		}else{//otherwise, just insert without the split.
+			clone.insertBefore(span,targetNodeText);
+		}
+		clone.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //do not append it in the inner editor (messes with ace), put it in the outer one.
+
+		var cursorPosition = $(span).offset();
+		var scrollYPos= $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position
+
+		clone.remove(); //clean up again.
+
+		return {
+			top: (position.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
+			left:position.left
+		};
+
+		/////////////////////////////////////////////////////////////////
+
+		/* TODO:
+		rework this:
+		* Determine DIV (done already)
+		* NEW: don't clone div.
+		* Go into div's children.
+		* Do normal character counting
+		* Found target Div-Child?
+			* NEW: find deepmost child
+			* NEW: Clone THAT
+		* Apply computed styles
+
+		*/
+		/*
 		var clone = nodeToFind.clone(); //clone the node the cursor is in
 		var computedCSS= window.getComputedStyle(nodeToFind[0]); //get the "real" css styles.
 		var p = nodeToFind.position(); //get the source nodes position
@@ -338,6 +423,7 @@ var autocomp = {
 			top: (position.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
 			left:position.left
 		};
+		*/
 	},
 	
 	getParam: function(sname)
