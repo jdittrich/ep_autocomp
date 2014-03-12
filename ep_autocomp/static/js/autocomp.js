@@ -205,7 +205,7 @@ var autocomp = {
 		
 		var caretPosition = context.rep.selEnd; //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
 		var currentLine = context.rep.lines.atIndex(caretPosition[0]); //gets infos about the line the caret is in 
-		var textBeforeCaret = currentLine.text.slice(0,caretPosition[1]); //from beginning until caret
+		var textBeforeCaret = currentLine.text.slice(0,caretPosition[1]); //from beginning until caret //at least with the code completion plugin we have a * at the beginning of each line, that causes trouble. context.rep.lines.atIndex(caretPosition[0]).domInfo.node
 		//var charAfterCaret = currentLine.text.charAt(caretPosition[1]); //returns the character after the caret
 		var relevantSection = textBeforeCaret.match(sectionMarker)[0]; 
 		
@@ -282,9 +282,114 @@ var autocomp = {
 		Than we clean up again, cause this is messy stuff.
 		*/
 
-		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //move this out for performace reasons, rarely changes. 
+
+		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //possible move this out for performace reasons, rarely changes.
+
 		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x; 
-		var nodeToFind = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
+		var $cursorDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
+
+		var $textNodes=$cursorDiv.find("*").contents().filter(function() {
+               	return this.nodeType === 3;
+  	});
+
+		//now we want to find the subnode (some span) it is in.
+		var counter=0; //holds the added length of text of all subnodes parsed.
+		var childNode=null; //the subnode our cursor is in.
+
+		//find the child node the cursor is in
+		$textNodes.each(function(index,element){
+			counter = counter+element.textContent.length;
+			$childNode = $(element.parentNode); //…current subnode. It can be put in the if clause as well, *but* if none is found that we would need to failsave this somewhere else
+
+			if(counter >= context.rep.selEnd[1]){ //if the added text length is grater than the cursors position. //-1 added as typing the last character caused a selEnd[1] number 1 greater that the text length
+				return false; //stop jquery each by returning false
+			}
+		});
+
+
+
+
+		//find its position
+		var childNodeOffset = $childNode.position(); //was: offset()
+
+		//get its styles (to reapply to a clone later)
+		var computedCSS= window.getComputedStyle($childNode[0]);
+
+		//clone it
+		var $cloneChildNode = $childNode.clone();
+
+		//apply all styles to it
+		$cloneChildNode.attr("id","tempPosId");//change the id…
+		$cloneChildNode.css({ //apply the styles (todo: do it for subnodes as well
+			"position":"absolute",
+			width:computedCSS.width,
+			heigth:computedCSS.height,
+			margin:computedCSS.margin,
+			padding:computedCSS.padding,
+			fontSize:computedCSS.fontSize,
+			fontWeight:computedCSS.fontWeight,
+			fontFamily:computedCSS.fontFamily,
+			lineHeight:computedCSS.lineHeight,
+			top:childNodeOffset.top+innerEditorPosition.top+"px" , //old: position.top+innerEditorPosition.top+"px"
+			left:childNodeOffset.left+innerEditorPosition.left+"px", //old: position.left+innerEditorPosition.left+"px"
+			background:"gray",
+			color:"black",
+			display:"block"
+		});
+
+		var leftoverString = $cloneChildNode.text().length - (counter-context.rep.selEnd[1]); //how many characters are between the start of the element and the cursor?
+		var targetNodeText = $cloneChildNode[0].childNodes[0] || "";//get the text of the subnode our cursor is in. not using .(text), because $I want to use TextNode native splitText later. FIX: I sometimes get a targetNo
+
+		var span = document.createElement("span"); //create a helper span
+		span.appendChild(document.createTextNode('X'));//…and give it a content.
+
+
+		var text1 = targetNodeText.nodeValue.substr(0, leftoverString);
+		var text2 = targetNodeText.nodeValue.substr(leftoverString);
+
+
+		// Remove the existing text
+		$cloneChildNode.text("");
+
+		// Put the new text in
+		$cloneChildNode[0].appendChild(document.createTextNode(text1));
+		$cloneChildNode[0].appendChild(span);
+		$cloneChildNode[0].appendChild(document.createTextNode(text2));
+
+		/*
+		if(targetNodeText.length>2){//if there is text long enough to insert something in between…
+				$cloneChildNode[0].insertBefore(span, targetNodeText.splitText(leftoverString));
+		}else{//otherwise, just insert without the split.
+				$cloneChildNode[0].insertBefore(span,targetNodeText);
+		}*/
+
+		$cloneChildNode.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //do not append it in the inner editor (messes with ace), put it in the outer one.
+
+		var cursorPosition = $(span).offset();
+		var scrollYPos= $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position
+
+		$cloneChildNode.remove(); //clean up again.
+
+		return {
+			top: (cursorPosition.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
+			left:cursorPosition.left
+		};
+
+		/////////////////////////////////////////////////////////////////
+
+		/* TODO:
+		rework this:
+		* Determine DIV (done already)
+		* NEW: don't clone div.
+		* Go into div's children.
+		* Do normal character counting
+		* Found target Div-Child?
+			* NEW: find deepmost child
+			* NEW: Clone THAT
+		* Apply computed styles
+
+		*/
+		/*
 		var clone = nodeToFind.clone(); //clone the node the cursor is in
 		var computedCSS= window.getComputedStyle(nodeToFind[0]); //get the "real" css styles.
 		var p = nodeToFind.position(); //get the source nodes position
@@ -338,6 +443,7 @@ var autocomp = {
 			top: (position.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
 			left:position.left
 		};
+		*/
 	},
 	
 	getParam: function(sname)
