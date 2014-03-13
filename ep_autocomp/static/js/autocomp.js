@@ -10,7 +10,7 @@ $('#taglistButton').click(function(){
 });
 */
 
-// var $autocomp, $list; irritating. They are created in postAceInit
+var $autocomp, $list; //fails if they are not defined here, though they are created in postAceInit.
 
 //todo: change to var autocomp = autocomp ||  {} with following autocomp.… =
 //so it would be possible to augment the autocomp object from other hooks without polluting global space too much.

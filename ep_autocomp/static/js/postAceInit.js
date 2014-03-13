@@ -1,6 +1,8 @@
 exports.postAceInit = function(type, context){
 	var $ = require('ep_etherpad-lite/static/js/rjquery').$; //it rjquery is a bridge in order to make jquery require-able
 	$.getScript("../static/plugins/ep_autocomp/static/js/lib/jquery_sendkeys.js", function(){});
+
+
 	/*
 	Determines if the functionality is activated or not. 
 	*/
