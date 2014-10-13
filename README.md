@@ -1,5 +1,8 @@
-# Autocompletion 
-It’s very alpha... but the concept works. 
+# Autocompletion for Etherpad
+
+![screeshot](http://i.imgur.com/2uqR3Tg.png)
+
+It’s  alpha... but it works. 
 Please contribute and/or file bugs. 
 
 **Caution:** This add-on will require some configuration before it autocompletes what you want it to autocomplete. Originally, this was written to autocomplete hashtags, you may want to to autocomplete from all words of the document, or a list of predefined keywords etc. see /home/jan/Dropbox/OnTheGo/etherpadtests/autocompletion/ep_autocomp/static/js/autocomp.js  autocomp.config for customizing simple cases and autocomp.getPossibleSuggestions for more complex behaviour customizations.
