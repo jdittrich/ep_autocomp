@@ -21,8 +21,8 @@ var autocomp = {
 	//isShown: false,
 	config:{
 		//move this ot external JSON. Save Regexes as Strings, parse them when needed.
-		hardcodedSuggestions:["a", "ab", "abc", "abcd", "b", "bc", "bcd", "bcde"], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
-		regexToFind:[/(#\w+)+/g, /(#\w+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
+		hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
+		regexToFind:[/(\S+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
 		//EXAMPLE REGEXES:
 		// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
 		// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
