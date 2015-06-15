@@ -2,12 +2,16 @@
 
 ![screeshot](http://i.imgur.com/2uqR3Tg.png)
 
-It’s  alpha... but it works. 
+It’s  alpha-ish, but works. 
 Please contribute and/or file bugs. 
 
-**Caution:** This add-on will require some configuration before it autocompletes what you want it to autocomplete. Originally, this was written to autocomplete hashtags, you may want to to autocomplete from all words of the document, or a list of predefined keywords etc. see the value `autocomp.config` in the  `ep_autocomp/static/js/autocomp.js` file
+## Customization
+In its preconfigured form it completes words (searches the document for words, suggests existing words if you type them again). This add-on will require configuration if you want it to autocomplete anything else. 
+
+See the value `autocomp.config` in the  `ep_autocomp/static/js/autocomp.js` file
 for customizing simple cases and the value `autocomp.getPossibleSuggestions` for more complex customizations.
 
+Originally, this was written to autocomplete hashtags, you may want to complet from list of predefined keywords or from a hash of usernames after typing an *@* etc. There are some examples in the sourcecode. 
 
 #License
 Copyright 2014, John McLear
