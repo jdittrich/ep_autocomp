@@ -13,6 +13,9 @@ for customizing simple cases and the value `autocomp.getPossibleSuggestions` for
 
 Originally, this was written to autocomplete hashtags, you may want to complet from list of predefined keywords or from a hash of usernames after typing an *@* etc. There are some examples in the sourcecode. 
 
+## Install
+Open terminal, navigate  to your etherpad folder and: type `npm install ep_autocomp` OR type `git clone https://github.com/jdittrich/ep_autocomp.git node_modules/ep_autocomp`
+
 #License
 Copyright 2014, John McLear
 
