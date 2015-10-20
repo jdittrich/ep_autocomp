@@ -442,11 +442,25 @@ var autocomp = {
     var sectionMarker= /[\S]*$/;
 
     var caretPosition = context.rep.selEnd; //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
-    var currentLine = context.rep.lines.atIndex(caretPosition[0]); //gets infos about the line the caret is in
-    var textBeforeCaret = currentLine.text.slice(0,caretPosition[1]); //from beginning until caret //at least with the code completion plugin we have a * at the beginning of each line, that causes trouble. context.rep.lines.atIndex(caretPosition[0]).domInfo.node
-    //var charAfterCaret = currentLine.text.charAt(caretPosition[1]); //returns the character after the caret
+    var currentLine = this.getCurrentLine(context);
+    var textBeforeCaret = currentLine.slice(0,caretPosition[1]); //from beginning until caret //at least with the code completion plugin we have a * at the beginning of each line, that causes trouble. context.rep.lines.atIndex(caretPosition[0]).domInfo.node
     var partialWord = textBeforeCaret.match(sectionMarker)[0];
+
     return partialWord;
+  },
+  hasMarker:function(context, line){
+    var attributeManager = context.documentAttributeManager;
+    return (attributeManager.lineHasMarker(line));
+  },
+  getCurrentLine:function(context){
+    var currentLine = context.rep.selEnd[0];
+    var currentLineText = context.rep.lines.atIndex(currentLine).text;
+    // if line has marker, it starts with "*". We need to ignore it
+    var lineHasMarker = this.hasMarker(context, currentLine);
+    if(lineHasMarker){
+      currentLineText = currentLineText.substr(1);
+    }
+    return currentLineText;
   }
 
 };
