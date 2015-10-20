@@ -60,10 +60,10 @@ describe("show autocomplete suggestions", function(){
     });
   })
 
-  context("when there is line attributes apllied", function(){
+  context("when there is line attributes applied", function(){
 
     it("ignores * in the beginning of line", function(done){
-      addAttributeToFirstLine(function(){
+      addAttributeToLine(0, function(){
         var outer$ = helper.padOuter$;
         var inner$ = helper.padInner$;
         var $lastLine =  inner$("div").last();
@@ -96,6 +96,31 @@ describe("show autocomplete suggestions", function(){
         done();
       }, 500);
     })
+  })
+
+  context("when user types in a line with line attributes", function(){
+
+    it("ignores * in the beginning of line", function(done){
+      getLine(3).sendkeys("c");
+      addAttributeToLine(3, function(){
+        var outer$ = helper.padOuter$;
+        var inner$ = helper.padInner$;
+        var $lastLine =  inner$("div").last();
+
+        //using contents was the only way we found to set content of a list item
+        $lastLine.find("ul li").contents().sendkeys('a');
+        helper.waitFor(function(){
+          return outer$('div#autocomp').is(":visible");
+        }).done(function(){
+          pressEnter();
+          helper.waitFor(function(){
+            var $lastLine =  inner$("div").last();
+            return $lastLine.text() === "car";
+          }).done(done);
+        });
+      });
+    })
+
   })
 })
 
@@ -149,13 +174,25 @@ function pressListButton(){
   $insertunorderedlistButton.click();
 }
 
-function addAttributeToFirstLine(cb){
+function addAttributeToLine(lineNum, cb){
   var inner$ = helper.padInner$;
-  var $firstLine = inner$("div").first();
-  $firstLine.sendkeys('{selectall}');
+  var $targetLine = getLine(lineNum);
+  $targetLine.sendkeys('{mark}');
   pressListButton();
   helper.waitFor(function(){
-    var $firstLine = inner$("div").first();
-    return $firstLine.find("ul li").length === 1;
+    var $targetLine = getLine(lineNum);
+    return $targetLine.find("ul li").length === 1;
   }).done(cb);
+}
+
+// first line === getLine(0)
+// second line === getLine(1)
+// ...
+var getLine = function(lineNum){
+  var inner$ = helper.padInner$;
+  var line = inner$("div").first();
+  for (var i = lineNum - 1; i >= 0; i--) {
+    line = line.next();
+  }
+  return line;
 }
