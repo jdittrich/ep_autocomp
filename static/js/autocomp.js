@@ -19,6 +19,7 @@ var autocomp = {
 	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
 	//isEnabled: true,//this could be getter/Setter too
 	//isShown: false,
+  processEvent: true,
 	config:{
 		//move this ot external JSON. Save Regexes as Strings, parse them when needed.
 		hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
@@ -89,6 +90,7 @@ var autocomp = {
 	},
 
 	aceKeyEvent: function(type, context, cb){
+    if (!autocomp.processEvent) return;
 		if(!$autocomp||!context){//precaution
 			return;
 		}
@@ -179,6 +181,7 @@ var autocomp = {
 		}
 	},
 	aceEditEvent:function(type, context, cb){
+    if (!autocomp.processEvent) return;
 		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
 		autocomp.update(type, context, cb);
 	},

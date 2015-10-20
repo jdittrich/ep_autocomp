@@ -82,6 +82,21 @@ describe("show autocomplete suggestions", function(){
 
   })
 
+  context("when event processing is disabled", function(){
+    it("does not show suggestions", function(done){
+      var outer$ = helper.padOuter$;
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.processEvent = false;
+      var inner$ = helper.padInner$;
+      var $lastLine =  inner$("div").last();
+      $lastLine.sendkeys('c');
+      //we have to give enough time to suggestions box be shown
+      setTimeout(function() {
+        expect(outer$('div#autocomp').is(":visible")).to.be(false);
+        done();
+      }, 500);
+    })
+  })
 })
 
 /* ********** Helper functions ********** */
