@@ -171,7 +171,7 @@ var autocomp = {
 		//SPACE AND CONTROL PRESSED
 		if(context.evt.which === 32 && context.evt.ctrlKey){
 			if($autocomp.is(":hidden")){
-				autocomp.update(type,context);
+				autocomp.update(context);
 				$autocomp.show();
 			}else{
 				$autocomp.hide();
@@ -183,31 +183,25 @@ var autocomp = {
 	aceEditEvent:function(type, context, cb){
     if (!autocomp.processEvent) return;
 		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
-		autocomp.update(type, context, cb);
+		autocomp.update(context);
 	},
-	update:function(type, context, cb){
+	update:function(context, fixedSuggestions){
 
-		if(context.rep.selStart === null){return;}
-		if(autocomp.isEditByMe(context)!==true){return;} //as edit event is called when anyone edits, we must ensure it is the current user
+		if(context.rep.selStart === null) return;
+    //as edit event is called when anyone edits, we must ensure it is the current user
+		if(!autocomp.isEditByMe(context)) return;
 
-		//TODO: make section marker dependend on the autocomp.config.regexToFind.
-		var sectionMarker= /[\S]*$/; //what is the  section to be considered? Usually, this will be everything which is not a space. The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end. (To understand better, just paste into regexpal.com)
-		var afterSectionMarker = /^$|^\s/ ; //what is the section after the caret in order to allow autocompletion? Usually we don’t want to start autocompletion directly in a word, so we restrict it to either whitepsace \s or to an empty string, ^$. Not this applies the the string after the caret (hence the start of string at the beginning, ^)
+    //get the word which is being typed
+    var partialWord = this.getCurrentPartialWord(context);
 
-		var caretPosition = context.rep.selEnd; //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
-		var currentLine = context.rep.lines.atIndex(caretPosition[0]); //gets infos about the line the caret is in
-		var textBeforeCaret = currentLine.text.slice(0,caretPosition[1]); //from beginning until caret //at least with the code completion plugin we have a * at the beginning of each line, that causes trouble. context.rep.lines.atIndex(caretPosition[0]).domInfo.node
-		//var charAfterCaret = currentLine.text.charAt(caretPosition[1]); //returns the character after the caret
-		var relevantSection = textBeforeCaret.match(sectionMarker)[0];
-
-
-		if(relevantSection.length===0){ //return if either the string in front or the string after the caret are not suitable.
+    //hide suggestions if no word is typed
+		if(partialWord.length===0){
 			$autocomp.hide();
 			return;
 		}
 
-		suggestions = autocomp.getPossibleSuggestions(context);
-		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions);
+		suggestions = fixedSuggestions || autocomp.getPossibleSuggestions(context);
+		filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions);
 
 		if(filteredSuggestions.length===0){
 			$autocomp.hide();
@@ -217,10 +211,10 @@ var autocomp = {
 		var cursorPosition = autocomp.cursorPosition(context);
 		autocomp.createAutocompHTML(filteredSuggestions,cursorPosition);
 	},
-	filterSuggestionList:function(relevantSection,possibleSuggestions){
+	filterSuggestionList:function(partialWord,possibleSuggestions){
 		/*
 		gets:
-		- the string for which we want matches ("relevantSection")
+		- the string for which we want matches ("partialWord")
 		- a list of all completions
 
 		returns: an array with objects containing suggestions as object with
@@ -235,8 +229,8 @@ var autocomp = {
 		var filteredSuggestions=[];
 		_.each(possibleSuggestions,function(possibleSuggestion, key, list){
 			if(typeof possibleSuggestion !=="string"){return;} //precaution
-			if(possibleSuggestion.indexOf(relevantSection)===0 && possibleSuggestion!==relevantSection){ //indexOf === 0 means, the relevantSection starts at the begin of the possibleSuggestion. possibleSuggestion!==relevantSection causes a true if the two are not the same, otherwise we would autocomplete "abc" with "abc"
-				var complementaryString = possibleSuggestion.slice(relevantSection.length)
+			if(possibleSuggestion.indexOf(partialWord)===0 && possibleSuggestion!==partialWord){ //indexOf === 0 means, the partialWord starts at the begin of the possibleSuggestion. possibleSuggestion!==partialWord causes a true if the two are not the same, otherwise we would autocomplete "abc" with "abc"
+				var complementaryString = possibleSuggestion.slice(partialWord.length)
 				filteredSuggestions.push({
 				"fullText":possibleSuggestion,
 				"complementaryString":complementaryString});
@@ -371,8 +365,7 @@ var autocomp = {
 		};
 	},
 
-	getParam: function(sname)
-	{
+	getParam: function(sname){
 	/*
 	for getting URL parameters
 	sname is the requested key
@@ -404,9 +397,11 @@ var autocomp = {
 		/*
 		FIXME: find a better/more clean way to determine authorship.
 		*/
-		if (!context||!context.callstack){return} //precautiion
-		if (context.callstack.editEvent.eventType === "idleWorkTimer" || context.callstack.editEvent.eventType === "handleKeyEvent"){ //this is the only way I found to determine if an edit is caused by input from the current user or from a collaborator
-			return true
+		if (!context||!context.callstack) return false; //precaution
+
+    //this is the only way I found to determine if an edit is caused by input from the current user or from a collaborator
+		if (context.callstack.editEvent.eventType === "idleWorkTimer" || context.callstack.editEvent.eventType === "handleKeyEvent"){
+			return true;
 		}else{
 			return false;
 		}
@@ -438,7 +433,21 @@ var autocomp = {
 		return _.uniq(//uniq: prevent dublicate entrys
 			hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
 		true);//true, since input array is already sorted
-	}
+	},
+  getCurrentPartialWord:function(context){
+    //TODO: make section marker dependend on the autocomp.config.regexToFind.
+    //what is the  section to be considered? Usually, this will be everything which is not a space.
+    //The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end.
+    //(To understand better, just paste into regexpal.com)
+    var sectionMarker= /[\S]*$/;
+
+    var caretPosition = context.rep.selEnd; //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
+    var currentLine = context.rep.lines.atIndex(caretPosition[0]); //gets infos about the line the caret is in
+    var textBeforeCaret = currentLine.text.slice(0,caretPosition[1]); //from beginning until caret //at least with the code completion plugin we have a * at the beginning of each line, that causes trouble. context.rep.lines.atIndex(caretPosition[0]).domInfo.node
+    //var charAfterCaret = currentLine.text.charAt(caretPosition[1]); //returns the character after the caret
+    var partialWord = textBeforeCaret.match(sectionMarker)[0];
+    return partialWord;
+  }
 
 };
 
