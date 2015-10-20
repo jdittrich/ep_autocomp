@@ -1,4 +1,4 @@
-var underscore = require('ep_etherpad-lite/static/js/underscore');
+var _ = require('ep_etherpad-lite/static/js/underscore');
 var $ = require('ep_etherpad-lite/static/js/rjquery').$; //it rjquery is a bridge in order to make jquery require-able
 
 
@@ -64,8 +64,6 @@ var autocomp = {
 
 
 		$list.empty();
-
-		//console.log(cursorPosition.top, cursorPosition.left);
 
 		//CREATE DOM ELEMENTS
 		var listEntries = [];
@@ -232,7 +230,7 @@ var autocomp = {
 
 		//filter it
 		var filteredSuggestions=[];
-		underscore.each(possibleSuggestions,function(possibleSuggestion, key, list){
+		_.each(possibleSuggestions,function(possibleSuggestion, key, list){
 			if(typeof possibleSuggestion !=="string"){return;} //precaution
 			if(possibleSuggestion.indexOf(relevantSection)===0 && possibleSuggestion!==relevantSection){ //indexOf === 0 means, the relevantSection starts at the begin of the possibleSuggestion. possibleSuggestion!==relevantSection causes a true if the two are not the same, otherwise we would autocomplete "abc" with "abc"
 				var complementaryString = possibleSuggestion.slice(relevantSection.length)
@@ -243,11 +241,10 @@ var autocomp = {
 		});
 
 		/* //AS POSSIBLE SUGGESTIONS ALREADY SORTS, I COMMENTED IT OUT;  TODO: delete this if code works
-		var filteredSuggestionsSorted= underscore.sortBy(filteredSuggestions,function(suggestion){ //sort it (if the list remains static, this could be done only once
+		var filteredSuggestionsSorted= _.sortBy(filteredSuggestions,function(suggestion){ //sort it (if the list remains static, this could be done only once
 			return suggestion.fullText; //sort suggestions by the fullText attribute
 		});*/
 
-		//console.log(relevantSection,filteredSuggestionsSorted);
 		return filteredSuggestions; //return filteredSuggestionsSorted; TODO: delete this if code works
 	},
 	cursorPosition:function(context){
@@ -425,17 +422,17 @@ var autocomp = {
 			*/
 			var allText = context.rep.alltext; //contains all the text from the document in a string.
 
-			underscore.each(regexToFind,function(regEx){
+			_.each(regexToFind,function(regEx){
 				dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
 			})
       // lines with lineAttributes start with '*', we need to remove them
-      dynamicSuggestions = underscore.map(dynamicSuggestions, function(suggestion) {
+      dynamicSuggestions = _.map(dynamicSuggestions, function(suggestion) {
         if (suggestion.substr(0,1) === "*") return suggestion.substr(1);
         return suggestion;
       });
 
 		}//end if(context && context.rep.lines.allLines){
-		return underscore.uniq(//uniq: prevent dublicate entrys
+		return _.uniq(//uniq: prevent dublicate entrys
 			hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
 		true);//true, since input array is already sorted
 	}
