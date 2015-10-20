@@ -3,7 +3,7 @@ var $ = require('ep_etherpad-lite/static/js/rjquery').$; //it rjquery is a bridg
 
 
 /*
-This must be changed as we want to disable calling the plugin, not showing something. 
+This must be changed as we want to disable calling the plugin, not showing something.
 
 $('#taglistButton').click(function(){
   $('#taglist').toggle();
@@ -31,7 +31,7 @@ var autocomp = {
 	},
 	tempDisabled:false, //Dirty Hack. See autocomp.tempDisabledHelper and autocomp.aceKeyEvent
 	tempDisabledHelper:function(){
-		//this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice, 
+		//this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice,
 		//which causes unwanted actions. This function sets tempDisabled to true for a short time
 		//Thus preventing these double events.
 		//
@@ -62,11 +62,11 @@ var autocomp = {
 			$autocomp.hide();
 		}
 
-		
+
 		$list.empty();
-		
+
 		//console.log(cursorPosition.top, cursorPosition.left);
-		
+
 		//CREATE DOM ELEMENTS
 		var listEntries = [];
 		$.each(filteredSuggestions, function(index,suggestion){
@@ -84,7 +84,7 @@ var autocomp = {
 
 		$list.append(listEntries); //...append all list entries holding the suggestions
 		//appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom //remove this
-		
+
 		$autocomp
 			.show()
 			.css({top: cursorPosition.top, left: cursorPosition.left});
@@ -98,14 +98,14 @@ var autocomp = {
 			return;
 		}
 		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
-		
+
 		var offsetFromContainer;
 
 		//if not menu not shown, don't prevent defaults
-		
+
 		//if key is ↑ , choose next option, prevent default
 		//if key is ↓ , choose next option, prevent default
-		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again. 
+		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
 		if($autocomp.is(":visible")){
 			//ENTER PRESSED
 			if(context.evt.which === 13){
@@ -124,9 +124,9 @@ var autocomp = {
 			if(context.evt.which === 38){
 				if(!($list.children().first().hasClass("selected"))){//only do it if the selection is not on the first element already
 					$list.children(".selected").removeClass("selected").prev().addClass("selected");
-					
+
 					offsetFromContainer = $list.children(".selected").position().top
-					if(offsetFromContainer< 0){//if position is negative, element is not (fully visible)  
+					if(offsetFromContainer< 0){//if position is negative, element is not (fully visible)
 						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer) //note: scrolls to the top by lowering the number, since e.g. +(-10) will be -10
 					}
 
@@ -145,14 +145,14 @@ var autocomp = {
 					removeClass("selected").
 					next().
 					addClass("selected");
-					
-					offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height() 
+
+					offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height()
 
 					//scroll element into view if needed.
-					if(offsetFromContainer< 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible. 
+					if(offsetFromContainer< 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible.
 						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
 					} //END if for out-of-view
-					
+
 				}//END if end of children
 				autocomp.tempDisabledHelper();
 				context.evt.preventDefault();
@@ -167,9 +167,9 @@ var autocomp = {
 				return true;
 			}*/
 		}
-		
+
 		//SPACE AND CONTROL PRESSED
-		if(context.evt.which === 32 && context.evt.ctrlKey){ 
+		if(context.evt.which === 32 && context.evt.ctrlKey){
 			if($autocomp.is(":hidden")){
 				autocomp.update(type,context);
 				$autocomp.show();
@@ -180,7 +180,7 @@ var autocomp = {
 			return true;
 		}
 	},
-	aceEditEvent:function(type, context, cb){ 
+	aceEditEvent:function(type, context, cb){
 		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
 		autocomp.update(type, context, cb);
 	},
@@ -188,48 +188,48 @@ var autocomp = {
 
 		if(context.rep.selStart === null){return;}
 		if(autocomp.isEditByMe(context)!==true){return;} //as edit event is called when anyone edits, we must ensure it is the current user
-		
+
 		//TODO: make section marker dependend on the autocomp.config.regexToFind.
-		var sectionMarker= /[\S]*$/; //what is the  section to be considered? Usually, this will be everything which is not a space. The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end. (To understand better, just paste into regexpal.com) 
+		var sectionMarker= /[\S]*$/; //what is the  section to be considered? Usually, this will be everything which is not a space. The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end. (To understand better, just paste into regexpal.com)
 		var afterSectionMarker = /^$|^\s/ ; //what is the section after the caret in order to allow autocompletion? Usually we don’t want to start autocompletion directly in a word, so we restrict it to either whitepsace \s or to an empty string, ^$. Not this applies the the string after the caret (hence the start of string at the beginning, ^)
-		
+
 		var caretPosition = context.rep.selEnd; //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
-		var currentLine = context.rep.lines.atIndex(caretPosition[0]); //gets infos about the line the caret is in 
+		var currentLine = context.rep.lines.atIndex(caretPosition[0]); //gets infos about the line the caret is in
 		var textBeforeCaret = currentLine.text.slice(0,caretPosition[1]); //from beginning until caret //at least with the code completion plugin we have a * at the beginning of each line, that causes trouble. context.rep.lines.atIndex(caretPosition[0]).domInfo.node
 		//var charAfterCaret = currentLine.text.charAt(caretPosition[1]); //returns the character after the caret
-		var relevantSection = textBeforeCaret.match(sectionMarker)[0]; 
-		
-		
+		var relevantSection = textBeforeCaret.match(sectionMarker)[0];
+
+
 		if(relevantSection.length===0){ //return if either the string in front or the string after the caret are not suitable.
 			$autocomp.hide();
 			return;
 		}
-		
+
 		suggestions = autocomp.getPossibleSuggestions(context);
-		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions); 
-		
+		filteredSuggestions = autocomp.filterSuggestionList(relevantSection, suggestions);
+
 		if(filteredSuggestions.length===0){
 			$autocomp.hide();
 			return;
 		}
-		
+
 		var cursorPosition = autocomp.cursorPosition(context);
 		autocomp.createAutocompHTML(filteredSuggestions,cursorPosition);
 	},
 	filterSuggestionList:function(relevantSection,possibleSuggestions){
 		/*
-		gets: 
+		gets:
 		- the string for which we want matches ("relevantSection")
 		- a list of all completions
-		
+
 		returns: an array with objects containing suggestions as object with
 		{
 			fullText: string containing the full text, e.g. "nightingale"
 			complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
 		}
-		
+
 		*/
-		
+
 		//filter it
 		var filteredSuggestions=[];
 		underscore.each(possibleSuggestions,function(possibleSuggestion, key, list){
@@ -237,16 +237,16 @@ var autocomp = {
 			if(possibleSuggestion.indexOf(relevantSection)===0 && possibleSuggestion!==relevantSection){ //indexOf === 0 means, the relevantSection starts at the begin of the possibleSuggestion. possibleSuggestion!==relevantSection causes a true if the two are not the same, otherwise we would autocomplete "abc" with "abc"
 				var complementaryString = possibleSuggestion.slice(relevantSection.length)
 				filteredSuggestions.push({
-				"fullText":possibleSuggestion, 
+				"fullText":possibleSuggestion,
 				"complementaryString":complementaryString});
 			}
 		});
-		
+
 		/* //AS POSSIBLE SUGGESTIONS ALREADY SORTS, I COMMENTED IT OUT;  TODO: delete this if code works
 		var filteredSuggestionsSorted= underscore.sortBy(filteredSuggestions,function(suggestion){ //sort it (if the list remains static, this could be done only once
 			return suggestion.fullText; //sort suggestions by the fullText attribute
 		});*/
-		
+
 		//console.log(relevantSection,filteredSuggestionsSorted);
 		return filteredSuggestions; //return filteredSuggestionsSorted; TODO: delete this if code works
 	},
@@ -275,7 +275,7 @@ var autocomp = {
 
 		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //Position of editor relative to client. Needed in final positioning //possible move this out for performace reasons, rarely changes.
 
-		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x; 
+		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x;
 		var $cursorDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
 
 		var $textNodes=$cursorDiv.find("*").contents().filter(function() { //$textNodes than holds all text nodes that are found inside the div (in the same order as in the document hopefully!)
@@ -370,7 +370,7 @@ var autocomp = {
 			left:cursorPosition.left
 		};
 	},
-	
+
 	getParam: function(sname)
 	{
 	/*
@@ -393,14 +393,14 @@ var autocomp = {
 	}
 	return sval;
 	},
-	
+
 	isEditByMe:function(context){
 		/*
 		determines if the edit is done on the authors client or by a collaborator
 		gets: context-objects
 		returns: boolean. true (edit is done by author), false (edit done by someone else)
 		*/
-		
+
 		/*
 		FIXME: find a better/more clean way to determine authorship.
 		*/
@@ -414,9 +414,9 @@ var autocomp = {
 	getPossibleSuggestions:function(context){
 		var hardcodedSuggestions =  autocomp.config.hardcodedSuggestions;
 		var regexToFind=autocomp.config.regexToFind;
-		
+
 		var dynamicSuggestions=[];
-		
+
 		if(context && context.rep.alltext){
 			/*
 			NOTE:
@@ -424,16 +424,21 @@ var autocomp = {
 			The array must be a one-dimensional array containing only string values!
 			*/
 			var allText = context.rep.alltext; //contains all the text from the document in a string.
-			
+
 			underscore.each(regexToFind,function(regEx){
 				dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
 			})
-		
+      // lines with lineAttributes start with '*', we need to remove them
+      dynamicSuggestions = underscore.map(dynamicSuggestions, function(suggestion) {
+        if (suggestion.substr(0,1) === "*") return suggestion.substr(1);
+        return suggestion;
+      });
+
 		}//end if(context && context.rep.lines.allLines){
 		return underscore.uniq(//uniq: prevent dublicate entrys
 			hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
 		true);//true, since input array is already sorted
 	}
-	
+
 };
 

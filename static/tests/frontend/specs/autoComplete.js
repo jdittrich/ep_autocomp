@@ -60,6 +60,27 @@ describe("show autocomplete suggestions", function(){
     });
   })
 
+  context("when there is line attributes apllied", function(){
+
+    it("ignores * in the beginning of line", function(done){
+      addAttributeToFirstLine(function(){
+        var outer$ = helper.padOuter$;
+        var inner$ = helper.padInner$;
+        var $lastLine =  inner$("div").last();
+        $lastLine.sendkeys('c');
+        helper.waitFor(function(){
+          return outer$('div#autocomp').is(":visible");
+        }).done(function(){
+          pressEnter();
+          helper.waitFor(function(){
+            var $lastLine =  inner$("div").last();
+            return $lastLine.text() === "car";
+          }).done(done);
+        });
+      });
+    })
+
+  })
 
 })
 
@@ -105,4 +126,21 @@ function pressEnter(){
   var e = inner$.Event(evtType);
   e.which = 13; // enter :|
   inner$("#innerdocbody").trigger(e);
+}
+
+function pressListButton(){
+  var chrome$ = helper.padChrome$;
+  var $insertunorderedlistButton = chrome$(".buttonicon-insertunorderedlist");
+  $insertunorderedlistButton.click();
+}
+
+function addAttributeToFirstLine(cb){
+  var inner$ = helper.padInner$;
+  var $firstLine = inner$("div").first();
+  $firstLine.sendkeys('{selectall}');
+  pressListButton();
+  helper.waitFor(function(){
+    var $firstLine = inner$("div").first();
+    return $firstLine.find("ul li").length === 1;
+  }).done(cb);
 }
