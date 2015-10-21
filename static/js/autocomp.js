@@ -109,61 +109,34 @@ var autocomp = {
 		if($autocomp.is(":visible")){
 			//ENTER PRESSED
 			if(context.evt.which === 13){
-				var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
-				var currEl = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode; //the element the cursor is in
-				if(textToInsert!==undefined){
-					$(currEl).sendkeys(textToInsert);
-					$autocomp.hide();
+        var textReplaced = this.selectSuggestion(context);
+        if (textReplaced) {
 					context.evt.preventDefault();
-					autocomp.tempDisabledHelper();
-					return true; // returnvalue should be true if the event was handled. So we return a true which can be returned by the hook itself consequently. A bit FUD here.
-				}//END if textToInsert
-			}//END if enter
+          // return value should be true if the event was handled.
+          // So we return true which can be returned by the hook itself consequently.
+					return true;
+				}
+			}
 
 			//UP PRESSED
 			if(context.evt.which === 38){
-				if(!($list.children().first().hasClass("selected"))){//only do it if the selection is not on the first element already
-					$list.children(".selected").removeClass("selected").prev().addClass("selected");
-
-					offsetFromContainer = $list.children(".selected").position().top
-					if(offsetFromContainer< 0){//if position is negative, element is not (fully visible)
-						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer) //note: scrolls to the top by lowering the number, since e.g. +(-10) will be -10
-					}
-
-				}
-				autocomp.tempDisabledHelper();
+				this.moveSelectionUp();
 				context.evt.preventDefault();
 				return true;
 
 			}
 			//DOWN PRESSED
 			if(context.evt.which === 40){
-				if(!($list.children().last().hasClass("selected"))){//only do it if the selection is not on the last element already
-					//move selected class to next element
-					$list.
-					children(".selected").
-					removeClass("selected").
-					next().
-					addClass("selected");
-
-					offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height()
-
-					//scroll element into view if needed.
-					if(offsetFromContainer< 0){//calculate offset between lower edge of the container and the position of the element. If the number is positive, the lement is not visible.
-						$autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
-					} //END if for out-of-view
-
-				}//END if end of children
-				autocomp.tempDisabledHelper();
+        this.moveSelectionDown();
 				context.evt.preventDefault();
 				return true;
 			}
 			//ESCAPE TODO: This is not caught. Better we add a close button. For more info see context.evt.which === 32 && context.evt.ctrlKey
 			/*
 			if(context.evt.which === 27){
-				autocomp.tempDisabledHelper();
-				context.evt.preventDefault();
-				$autocomp.hide();
+        autocomp.tempDisabledHelper();
+        context.evt.preventDefault();
+        $autocomp.hide();
 				return true;
 			}*/
 		}
@@ -171,15 +144,71 @@ var autocomp = {
 		//SPACE AND CONTROL PRESSED
 		if(context.evt.which === 32 && context.evt.ctrlKey){
 			if($autocomp.is(":hidden")){
-				autocomp.update(context);
-				$autocomp.show();
-			}else{
-				$autocomp.hide();
-			}
-			autocomp.tempDisabledHelper();
+        autocomp.update(context);
+        $autocomp.show();
+        autocomp.tempDisabledHelper();
+      }else{
+        this.closeSuggestionBox();
+      }
 			return true;
 		}
 	},
+  moveSelectionDown:function(){
+    //only do it if the selection is not on the last element already
+    if(!($list.children().last().hasClass("selected"))){
+      //move selected class to next element
+      $list.
+      children(".selected").
+      removeClass("selected").
+      next().
+      addClass("selected");
+
+      var offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height();
+
+      //scroll element into view if needed.
+      //calculate offset between lower edge of the container and the position of the element.
+      //If the number is positive, the lement is not visible.
+      if(offsetFromContainer< 0){
+        $autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
+      }
+
+    }
+    autocomp.tempDisabledHelper();
+  },
+  moveSelectionUp:function(){
+    //only do it if the selection is not on the first element already
+    if(!($list.children().first().hasClass("selected"))){
+      $list.children(".selected").removeClass("selected").prev().addClass("selected");
+
+      var offsetFromContainer = $list.children(".selected").position().top;
+      //if position is negative, element is not (fully visible)
+      if(offsetFromContainer< 0){
+        //note: scrolls to the top by lowering the number, since e.g. +(-10) will be -10
+        $autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
+      }
+
+    }
+    autocomp.tempDisabledHelper();
+  },
+  selectSuggestion:function(context){
+    var suggestionFound = false;
+    var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
+    //the element the cursor is in
+    var currentElement = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
+    console.log("o currentElement")
+    console.log(currentElement)
+    if(textToInsert!==undefined){
+      $(currentElement).sendkeys(textToInsert);
+      $autocomp.hide();
+      autocomp.tempDisabledHelper();
+      suggestionFound = true;
+    }
+    return suggestionFound;
+  },
+  closeSuggestionBox:function(){
+    autocomp.tempDisabledHelper();
+    $autocomp.hide();
+  },
 	aceEditEvent:function(type, context, cb){
     if (!autocomp.processEvent) return;
 		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
