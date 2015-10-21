@@ -60,40 +60,71 @@ describe("show autocomplete suggestions", function(){
     });
   })
 
+  context("when there is line attributes applied", function(){
 
+    it("ignores * in the beginning of line", function(done){
+      addAttributeToLine(0, function(){
+        var outer$ = helper.padOuter$;
+        var inner$ = helper.padInner$;
+        var $lastLine =  inner$("div").last();
+        $lastLine.sendkeys('c');
+        helper.waitFor(function(){
+          return outer$('div#autocomp').is(":visible");
+        }).done(function(){
+          pressEnter();
+          helper.waitFor(function(){
+            var $lastLine =  inner$("div").last();
+            return $lastLine.text() === "car";
+          }).done(done);
+        });
+      });
+    })
+
+  })
+
+  context("when event processing is disabled", function(){
+    it("does not show suggestions", function(done){
+      var outer$ = helper.padOuter$;
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.processEvent = false;
+      var inner$ = helper.padInner$;
+      var $lastLine =  inner$("div").last();
+      $lastLine.sendkeys('c');
+      //we have to give enough time to suggestions box be shown
+      setTimeout(function() {
+        expect(outer$('div#autocomp').is(":visible")).to.be(false);
+        done();
+      }, 500);
+    })
+  })
+
+  context("when user types in a line with line attributes", function(){
+
+    it("ignores * in the beginning of line", function(done){
+      getLine(3).sendkeys("c");
+      addAttributeToLine(3, function(){
+        var outer$ = helper.padOuter$;
+        var inner$ = helper.padInner$;
+        var $lastLine =  inner$("div").last();
+
+        //using contents was the only way we found to set content of a list item
+        $lastLine.find("ul li").contents().sendkeys('a');
+        helper.waitFor(function(){
+          return outer$('div#autocomp').is(":visible");
+        }).done(function(){
+          pressEnter();
+          helper.waitFor(function(){
+            var $lastLine =  inner$("div").last();
+            return $lastLine.text() === "car";
+          }).done(done);
+        });
+      });
+    })
+
+  })
 })
 
 /* ********** Helper functions ********** */
-
-var enableAutocomplete = function(shouldEnableAutocomplete, callback) {
-  var chrome$ = helper.padChrome$;
-
-  //click on the settings button to make settings visible
-  var $settingsButton = chrome$(".buttonicon-settings");
-  $settingsButton.click();
-
-  //check "enable autocompletion"
-  var $autoComplete = chrome$('#options-autocomp')
-  if ($autoComplete.is(':checked') !== shouldEnableAutocomplete) $autoComplete.click();
-
-  // hide settings again
-  $settingsButton.click();
-
-  callback();
-}
-
-var writeWordsWithC = function(cb){
-
-  var inner$ = helper.padInner$;
-  var $firstTextElement = inner$("div").first();
-  //select this text element
-  $firstTextElement.sendkeys('{selectall}');
-  $firstTextElement.sendkeys('car{enter}chrome{enter}couch{enter}{enter}');
-  helper.waitFor(function(){
-    var $firstTextElement =  inner$("div").first();
-    return $firstTextElement.text() === "car";
-  }).done(cb);
-}
 
 function pressEnter(){
   var inner$ = helper.padInner$;
@@ -105,4 +136,33 @@ function pressEnter(){
   var e = inner$.Event(evtType);
   e.which = 13; // enter :|
   inner$("#innerdocbody").trigger(e);
+}
+
+function pressListButton(){
+  var chrome$ = helper.padChrome$;
+  var $insertunorderedlistButton = chrome$(".buttonicon-insertunorderedlist");
+  $insertunorderedlistButton.click();
+}
+
+function addAttributeToLine(lineNum, cb){
+  var inner$ = helper.padInner$;
+  var $targetLine = getLine(lineNum);
+  $targetLine.sendkeys('{mark}');
+  pressListButton();
+  helper.waitFor(function(){
+    var $targetLine = getLine(lineNum);
+    return $targetLine.find("ul li").length === 1;
+  }).done(cb);
+}
+
+// first line === getLine(0)
+// second line === getLine(1)
+// ...
+var getLine = function(lineNum){
+  var inner$ = helper.padInner$;
+  var line = inner$("div").first();
+  for (var i = lineNum - 1; i >= 0; i--) {
+    line = line.next();
+  }
+  return line;
 }
