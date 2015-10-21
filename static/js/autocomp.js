@@ -195,8 +195,6 @@ var autocomp = {
     var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
     //the element the cursor is in
     var currentElement = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
-    console.log("o currentElement")
-    console.log(currentElement)
     if(textToInsert!==undefined){
       $(currentElement).sendkeys(textToInsert);
       $autocomp.hide();
