@@ -19,7 +19,13 @@ var autocomp = {
 	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
 	//isEnabled: true,//this could be getter/Setter too
 	//isShown: false,
+
+  // flag to allow other plugins to avoid this plugin to process ace events
   processEvent: true,
+
+  // flag to allow show suggestions even if no word is typed
+  showOnEmptyWords: false,
+
 	config:{
 		//move this ot external JSON. Save Regexes as Strings, parse them when needed.
 		hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
@@ -222,7 +228,8 @@ var autocomp = {
     var partialWord = this.getCurrentPartialWord(context);
 
     //hide suggestions if no word is typed
-		if(partialWord.length===0){
+    var wordIsEmpty = partialWord.length === 0;
+		if(!this.showOnEmptyWords && wordIsEmpty){
 			$autocomp.hide();
 			return;
 		}
@@ -255,21 +262,25 @@ var autocomp = {
 		//filter it
 		var filteredSuggestions=[];
 		_.each(possibleSuggestions,function(possibleSuggestion, key, list){
-			if(typeof possibleSuggestion !=="string"){return;} //precaution
-			if(possibleSuggestion.indexOf(partialWord)===0 && possibleSuggestion!==partialWord){ //indexOf === 0 means, the partialWord starts at the begin of the possibleSuggestion. possibleSuggestion!==partialWord causes a true if the two are not the same, otherwise we would autocomplete "abc" with "abc"
-				var complementaryString = possibleSuggestion.slice(partialWord.length)
+			if(typeof possibleSuggestion !== "string") return; //precaution
+
+      // accept suggestion if user didn't type anything and flag showOnEmptyWords is "on"
+      var allowEmptyPartialWord   = (partialWord.length === 0 && autocomp.showOnEmptyWords);
+      // does partialWord start at the beginning of possibleSuggestion?
+      var isSubtextOfSuggestion   = (possibleSuggestion.indexOf(partialWord) === 0);
+      // avoid autocomplete "abc" with "abc"
+      var notSameWordOfSuggestion = (possibleSuggestion !== partialWord);
+
+			if((allowEmptyPartialWord || isSubtextOfSuggestion) && notSameWordOfSuggestion){
+				var complementaryString = possibleSuggestion.slice(partialWord.length);
 				filteredSuggestions.push({
-				"fullText":possibleSuggestion,
-				"complementaryString":complementaryString});
+  				"fullText":possibleSuggestion,
+  				"complementaryString":complementaryString
+        });
 			}
 		});
 
-		/* //AS POSSIBLE SUGGESTIONS ALREADY SORTS, I COMMENTED IT OUT;  TODO: delete this if code works
-		var filteredSuggestionsSorted= _.sortBy(filteredSuggestions,function(suggestion){ //sort it (if the list remains static, this could be done only once
-			return suggestion.fullText; //sort suggestions by the fullText attribute
-		});*/
-
-		return filteredSuggestions; //return filteredSuggestionsSorted; TODO: delete this if code works
+		return filteredSuggestions;
 	},
 	cursorPosition:function(context){
 		/*
@@ -286,103 +297,48 @@ var autocomp = {
 
 		div
 		|- span
-		etc.: Many divs (equal paragraphs) with spans inside (equal formated sections) So there are few spans if few formating took place, many spans if a lot of different bold, colored etc. text is there. But: the amount of nesting varies (one span may have a <b>, in which is a <i> etc. and instead of spans we may have code or the like as well.
+		etc.: Many divs (equal paragraphs) with spans inside (equal formated sections) So there are few spans if few formating
+          took place, many spans if a lot of different bold, colored etc. text is there. But: the amount of nesting varies
+          (one span may have a <b>, in which is a <i> etc. and instead of spans we may have code or the like as well.
 
-		In this function, we will determine the div the cursor is in and clone that div and its style. Than, in the clone, we find  the corresponding subnode the cursor is in, than the offset in the corresponding text node the cursor is in.
+		In this function, we will determine the div the cursor is in and clone that div and its style. Than, in the clone, we find
+    the corresponding subnode the cursor is in, than the offset in the corresponding text node the cursor is in.
 		Than we insert a span exactly there and get its position.
 		Than we clean up again, cause this is messy stuff.
 		*/
-
-
-		var innerEditorPosition= $('iframe[name="ace_outer"]').contents().find('#outerdocbody').find('iframe[name="ace_inner"]')[0].getBoundingClientRect(); //Position of editor relative to client. Needed in final positioning //possible move this out for performace reasons, rarely changes.
-
-		var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x;
-		var $cursorDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
-
-		var $textNodes=$cursorDiv.find("*").contents().filter(function() { //$textNodes than holds all text nodes that are found inside the div (in the same order as in the document hopefully!)
-			return this.nodeType === 3;
-		});
-
-		//now we want to find the text node the cursor is in.
-		var counter=0; //holds the added length of text of all text nodes parsed so far. Non parsed yet, so it's 0.
-		var childNode=null; //the subnode our cursor is in.
-
-		//find the child node the cursor is in
-		$textNodes.each(function(index,element){
-			counter = counter+element.textContent.length; //add up to the length of text nodes parsed.
-			$childNode = $(element.parentNode); //…current subnode. It can be put in the if clause as well, *but* if none is found that we would need to failsave this somewhere else
-
-			if(counter >= context.rep.selEnd[1]){ //if the added text length of all text parsed is now  grater than the cursors position. //using some plugins with neseted structures, it may be a bit off (to correct, substracting from selEnd[1] would be needed.
-				return false; //stop .each by returning false
-			}
-		});
-
-
-
-
-		//find the position of the node the cursor is in.
-		var  childNodePosition = $childNode.position(); //was: offset()
-
-		//get its styles (to reapply to a clone later)
-		var computedCSS= window.getComputedStyle($childNode[0]);
-
-		//clone it
-		var $cloneChildNode = $childNode.clone();
-
-		//apply all styles to it
-		$cloneChildNode.attr("id","tempPosId");//change the id…
-		$cloneChildNode.css({ //apply the styles (todo: do it for subnodes as well
-			"position":"absolute",
-			width:computedCSS.width,
-			heigth:computedCSS.height,
-			margin:computedCSS.margin,
-			padding:computedCSS.padding,
-			fontSize:computedCSS.fontSize,
-			fontWeight:computedCSS.fontWeight,
-			fontFamily:computedCSS.fontFamily,
-			lineHeight:computedCSS.lineHeight,
-			top:childNodePosition.top+innerEditorPosition.top+"px" , //old: position.top+innerEditorPosition.top+"px"
-			left:childNodePosition.left+innerEditorPosition.left+"px", //old: position.left+innerEditorPosition.left+"px"
-			background:"gray",
-			color:"black",
-			display:"block"
-		});
-
+    var nodeInfo        = this.getNodeInfoWhereCaretIs(context);
+    var counter         = nodeInfo.counter;
+    var $childNode      = nodeInfo.node;
+    var $cloneChildNode = this.cloneNodeWithStyle($childNode);
 
 		//
 		// In the following section we insert a DOM node where the cursor is.
 		//
 
-		var leftoverString = $cloneChildNode.text().length - (counter-context.rep.selEnd[1]); //how many characters are between the start of the element and the cursor?
-		var targetNodeText = $cloneChildNode[0].childNodes[0] || "";//get the text of the subnode our cursor is in.
+    //how many characters are between the start of the element and the cursor?
+		var leftoverString = $cloneChildNode.text().length - (counter - context.rep.selEnd[1]);
+    var targetNode = $cloneChildNode[0].childNodes[0]; // the subnode our cursor is in.
+		var targetNodeText = targetNode.nodeValue || ""; //get the text of the subnode our cursor is in.
 
 		var span = document.createElement("span"); //create a helper span to be inserted later
 		span.appendChild(document.createTextNode('X'));//…and give it a content.
 
-		var textBeforeCursor = targetNodeText.nodeValue.substr(0, leftoverString); //string before the cursor…
-		var textAfterCursor = targetNodeText.nodeValue.substr(leftoverString); //string after the cursor
-
+		var textBeforeCaret = targetNodeText.substr(0, leftoverString); //string before the caret
+		var textAfterCaret = targetNodeText.substr(leftoverString); //string after the caret
 
 		// Remove the existing text
 		$cloneChildNode.text("");
 
 		// reinsert the text, but with the additional node at cursor position
 
-		$cloneChildNode[0].appendChild(document.createTextNode(textBeforeCursor)); //insert text before cursor
+		$cloneChildNode[0].appendChild(document.createTextNode(textBeforeCaret)); //insert text before cursor
 		$cloneChildNode[0].appendChild(span); //insert element at cursor position.
-		$cloneChildNode[0].appendChild(document.createTextNode(textAfterCursor)); //insert text after cursor
-
-		/* OLD: TODO: remove
-		if(targetNodeText.length>2){//if there is text long enough to insert something in between…
-				$cloneChildNode[0].insertBefore(span, targetNodeText.splitText(leftoverString));
-		}else{//otherwise, just insert without the split.
-				$cloneChildNode[0].insertBefore(span,targetNodeText);
-		}*/
+		$cloneChildNode[0].appendChild(document.createTextNode(textAfterCaret)); //insert text after cursor
 
 		$cloneChildNode.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //In order to see where the node we added that the cursor position is, we need to insert it into the document. We do not append it in the inner editor (messes with ace), but put it in the outer one.
 
 		var cursorPosition = $(span).offset(); //now we get the position of the element which was inserted at the cursor position
-		var scrollYPos= $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position to take it into account.
+		var scrollYPos = $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position to take it into account.
 
 		$cloneChildNode.remove(); //clean up again.
 
@@ -391,6 +347,86 @@ var autocomp = {
 			left:cursorPosition.left
 		};
 	},
+
+  getNodeInfoWhereCaretIs: function(context){
+    var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x;
+    var caretColumn = caretPosition[1];
+    var $cursorDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
+
+    //$textNodes than holds all text nodes that are found inside the div (in the same order as in the document hopefully!)
+    var $textNodes = $cursorDiv.find("*").contents().filter(function() {
+      return this.nodeType === 3;
+    });
+
+    //now we want to find the text node the cursor is in.
+    var counter = 0; //holds the added length of text of all text nodes parsed so far. Non parsed yet, so it's 0.
+    var $childNode = null; //the subnode our cursor is in.
+
+    //find the child node the cursor is in
+    $textNodes.each(function(index,element){
+      counter = counter + element.textContent.length; //add up to the length of text nodes parsed.
+      //…current subnode. It can be put in the if clause as well, *but* if none is found that we would need to failsave this somewhere else
+      $childNode = $(element.parentNode);
+
+      //if the added text length of all text parsed is now  grater than the cursors position.
+      //using some plugins with neseted structures, it may be a bit off (to correct, substracting from selEnd[1] would be needed.
+      if(counter >= caretColumn){
+        return false; //stop .each by returning false
+      }
+    });
+
+    if ($childNode === null) {
+      // There was no text node inside $cursorDiv, so caret is on an empty line.
+      // Empty lines on Etherpad always have a <br>, so we get its parent.
+      // We cannot use br itself because if we insert a span inside the br we
+      // get weird positions on screen
+      $childNode = $cursorDiv.find("br").parent();
+    }
+
+    return {
+      node: $childNode,
+      counter: counter,
+    };
+  },
+
+  // Clone $target node and copy its style
+  cloneNodeWithStyle: function($targetNode){
+    //Position of editor relative to client. Needed in final positioning
+    //(maybe move this out for performance reasons? It rarely changes...)
+    var $padOuter = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
+    var $padInner = $padOuter.find('iframe[name="ace_inner"]');
+    var innerEditorPosition = $padInner[0].getBoundingClientRect();
+
+    //find the position of the target node
+    var childNodePosition = $targetNode.position(); //was: offset()
+
+    //get its styles (to reapply to a clone later)
+    var computedCSS = window.getComputedStyle($targetNode[0]);
+
+    //clone it
+    var $clonedNode = $targetNode.clone();
+
+    //apply all styles to it
+    $clonedNode.attr("id","tempPosId");//change the id…
+    $clonedNode.css({ //apply the styles (todo: do it for subnodes as well
+      "position":"absolute",
+      width:computedCSS.width,
+      heigth:computedCSS.height,
+      margin:computedCSS.margin,
+      padding:computedCSS.padding,
+      fontSize:computedCSS.fontSize,
+      fontWeight:computedCSS.fontWeight,
+      fontFamily:computedCSS.fontFamily,
+      lineHeight:computedCSS.lineHeight,
+      top:childNodePosition.top+innerEditorPosition.top+"px" , //old: position.top+innerEditorPosition.top+"px"
+      left:childNodePosition.left+innerEditorPosition.left+"px", //old: position.left+innerEditorPosition.left+"px"
+      background:"gray",
+      color:"black",
+      display:"block"
+    });
+
+    return $clonedNode;
+  },
 
 	getParam: function(sname){
 	/*

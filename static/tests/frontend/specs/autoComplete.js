@@ -23,7 +23,7 @@ describe("show autocomplete suggestions", function(){
 
       done();
     });
-  })
+  });
 
   it("hides suggestions", function(done){
     var outer$ = helper.padOuter$;
@@ -42,7 +42,7 @@ describe("show autocomplete suggestions", function(){
         return !outer$('div#autocomp').is(":visible");
       }).done(done);
     });
-  })
+  });
 
   it("applies selected suggestion", function(done){
     var outer$ = helper.padOuter$;
@@ -58,7 +58,7 @@ describe("show autocomplete suggestions", function(){
         return $lastLine.text() === "car";
       }).done(done);
     });
-  })
+  });
 
   context("when there is line attributes applied", function(){
 
@@ -78,9 +78,9 @@ describe("show autocomplete suggestions", function(){
           }).done(done);
         });
       });
-    })
+    });
 
-  })
+  });
 
   context("when event processing is disabled", function(){
     it("does not show suggestions", function(done){
@@ -95,8 +95,8 @@ describe("show autocomplete suggestions", function(){
         expect(outer$('div#autocomp').is(":visible")).to.be(false);
         done();
       }, 500);
-    })
-  })
+    });
+  });
 
   context("when user types in a line with line attributes", function(){
 
@@ -119,10 +119,32 @@ describe("show autocomplete suggestions", function(){
           }).done(done);
         });
       });
-    })
+    });
 
-  })
-})
+  });
+
+  context("when flag to show suggestions for empty words is turned on", function() {
+    beforeEach(function(cb) {
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.showOnEmptyWords = true;
+      cb();
+    });
+
+    it("displays suggestions without having to type anything", function(done) {
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
+      var $lastLine =  inner$("div").last();
+
+      // type something to display suggestions
+      $lastLine.sendkeys(" ");
+
+      helper.waitFor(function(){
+        return outer$('div#autocomp').is(":visible");
+      }).done(done);
+    });
+
+  });
+});
 
 /* ********** Helper functions ********** */
 
@@ -155,8 +177,8 @@ function addAttributeToLine(lineNum, cb){
   }).done(cb);
 }
 
-// first line === getLine(0)
-// second line === getLine(1)
+// first line === getLine(0);
+// second line === getLine(1);
 // ...
 var getLine = function(lineNum){
   var inner$ = helper.padInner$;
