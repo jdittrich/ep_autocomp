@@ -502,13 +502,12 @@ var autocomp = {
     //what is the  section to be considered? Usually, this will be everything which is not a space.
     //The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end.
     //(To understand better, just paste into regexpal.com)
-    var sectionMarker= /[\S]*$/;
+    var sectionMarker = /[\S]*$/;
 
-    var caretPosition = context.rep.selEnd; //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
-    var currentLine = this.getCurrentLine(context);
-    var textBeforeCaret = currentLine.slice(0,caretPosition[1]); //from beginning until caret //at least with the code completion plugin we have a * at the beginning of each line, that causes trouble. context.rep.lines.atIndex(caretPosition[0]).domInfo.node
-    var partialWord = textBeforeCaret.match(sectionMarker)[0];
-
+    var caretColumnPosition = this.getCaretColumnOnline(context);
+    var currentLine         = this.getCurrentLine(context);
+    var textBeforeCaret     = currentLine.slice(0,caretColumnPosition); //from beginning until caret
+    var partialWord         = textBeforeCaret.match(sectionMarker)[0];
     return partialWord;
   },
   hasMarker:function(context, line){
@@ -524,6 +523,17 @@ var autocomp = {
       currentLineText = currentLineText.substr(1);
     }
     return currentLineText;
+  },
+  getCaretColumnOnline:function(context){
+    //TODO: must it be the same as selStart to be viable? FUD-test on equivalence?
+    var currentColumn = context.rep.selEnd[1];
+    var currentLine = context.rep.selEnd[0];
+    // if line has marker, it starts with "*". We need to ignore it
+    var lineHasMarker = this.hasMarker(context, currentLine);
+    if(lineHasMarker){
+      currentColumn--;
+    }
+    return currentColumn;
   }
 
 };

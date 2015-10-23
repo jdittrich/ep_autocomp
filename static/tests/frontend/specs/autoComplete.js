@@ -98,17 +98,22 @@ describe("show autocomplete suggestions", function(){
     });
   });
 
-  context("when user types in a line with line attributes", function(){
-
-    it("ignores * in the beginning of line", function(done){
+  context("when current line has line attribute", function(){
+    beforeEach(function(cb) {
       getLine(3).sendkeys("c");
-      addAttributeToLine(3, function(){
+      addAttributeToLine(3, cb);
+    });
+
+    context("and there is no content after caret", function(){
+
+      it("ignores * in the beginning of line", function(done){
         var outer$ = helper.padOuter$;
         var inner$ = helper.padInner$;
-        var $lastLine =  inner$("div").last();
 
         //using contents was the only way we found to set content of a list item
-        $lastLine.find("ul li").contents().sendkeys('a');
+        var $lastLine =  inner$("div").last().find("ul li").contents();
+
+        $lastLine.sendkeys('a');
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
@@ -116,6 +121,33 @@ describe("show autocomplete suggestions", function(){
           helper.waitFor(function(){
             var $lastLine =  inner$("div").last();
             return $lastLine.text() === "car";
+          }).done(done);
+        });
+      });
+    });
+
+    context("and there is already content after caret", function(){
+      it("displays suggestions matching text before the caret", function(done){
+        var outer$ = helper.padOuter$;
+        var inner$ = helper.padInner$;
+
+        //using contents was the only way we found to set content of a list item
+        var $lastLine = inner$("div").last().find("ul li").contents();
+
+        // add content after caret
+        $lastLine.sendkeys('s{leftarrow}');
+        // type "a" to have "ca" before caret, so suggestion list has "car"
+        $lastLine.sendkeys('a');
+
+        // suggestions should have "car"
+        helper.waitFor(function(){
+          return outer$('div#autocomp').is(":visible");
+        }).done(function(){
+          // select "car", so we will have "cars" in the end
+          pressEnter();
+          helper.waitFor(function(){
+            var $lastLine =  inner$("div").last();
+            return $lastLine.text() === "cars";
           }).done(done);
         });
       });
