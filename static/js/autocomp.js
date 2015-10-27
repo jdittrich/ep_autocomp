@@ -27,6 +27,8 @@ var autocomp = {
   processEditEvent: true,
   // flag to allow show suggestions even if no word is typed
   showOnEmptyWords: false,
+  // flag to allow show suggestions with/without case sensitive
+  caseSensitiveMatch: true,
 
   // collection of callbacks to be called after user selects a suggestion from the list
   postSuggestionSelectedCallbacks: [],
@@ -292,7 +294,7 @@ var autocomp = {
       // accept suggestion if user didn't type anything and flag showOnEmptyWords is "on"
       var allowEmptyPartialWord   = (partialWord.length === 0 && autocomp.showOnEmptyWords);
       // does partialWord start at the beginning of possibleSuggestion?
-      var isSubtextOfSuggestion   = (possibleSuggestion.indexOf(partialWord) === 0);
+      var isSubtextOfSuggestion   = autocomp.subtextOfSuggestion(possibleSuggestion, partialWord);
       // avoid autocomplete "abc" with "abc"
       var notSameWordOfSuggestion = (possibleSuggestion !== partialWord);
 
@@ -307,6 +309,22 @@ var autocomp = {
 
 		return filteredSuggestions;
 	},
+
+  subtextOfSuggestion:function(possibleSuggestion, partialWord){
+    var isSubText;
+    // check if it should be considered matches without matching case
+    if (this.caseSensitiveMatch){
+      isSubText = (possibleSuggestion.indexOf(partialWord) === 0);
+    }else{
+      //turn possibleSuggestion and partialWord to lower case
+      var suggestionLowerCase = possibleSuggestion.toLowerCase();
+      var partialWordLowerCase = partialWord.toLowerCase();
+      //compares words without case
+      isSubText = (suggestionLowerCase.indexOf(partialWordLowerCase) === 0);
+    }
+    return isSubText;
+  },
+
 	cursorPosition:function(context){
 		/*
 		gets: context object from a ace editor event (e.g. aceEditEvent)

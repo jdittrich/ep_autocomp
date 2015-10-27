@@ -224,6 +224,33 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     });
 
   });
+
+  context("when suggestions are not case sensitive", function(){
+
+    // disable case sensitive matches
+    beforeEach(function(){
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.caseSensitiveMatch = false;
+    })
+
+    it("shows suggestions in uppercase and lowercase", function(done){
+      var $lastLine = getLine(3);
+      var outer$ = helper.padOuter$;
+      //write CAR in the last line, duplicated word uppercase
+      $lastLine.sendkeys('CAR CA');
+
+      helper.waitFor(function(){
+        return outer$('div#autocomp').is(":visible");
+      }).done(function(){
+        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        expect(suggestions).to.contain("CAR");
+        expect(suggestions).to.contain("car");
+        done();
+      });
+    });
+
+  });
+
 });
 
 /* ********** Helper functions ********** */
