@@ -47,14 +47,14 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
   it("applies selected suggestion when user presses ENTER", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
-    var $lastLine =  inner$("div").last();
+    var $lastLine =  getLine(3);
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
       autocompleteHelper.pressEnter();
       helper.waitFor(function(){
-        var $lastLine =  inner$("div").last();
+        var $lastLine =  getLine(3);
         return $lastLine.text() === "car";
       }).done(done);
     });
@@ -91,14 +91,14 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       autocompleteHelper.addAttributeToLine(0, function(){
         var outer$ = helper.padOuter$;
         var inner$ = helper.padInner$;
-        var $lastLine =  inner$("div").last();
+        var $lastLine =  getLine(3);
         $lastLine.sendkeys('c');
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
           autocompleteHelper.pressEnter();
           helper.waitFor(function(){
-            var $lastLine =  inner$("div").last();
+            var $lastLine =  getLine(3);
             return $lastLine.text() === "car";
           }).done(done);
         });
@@ -170,11 +170,9 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
-          autocompleteHelper.pressEnter();
-          helper.waitFor(function(){
-            var $lastLine =  inner$("div").last();
-            return $lastLine.text() === "car";
-          }).done(done);
+          var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+          expect(suggestions).to.contain("car");
+          done();
         });
       });
     });
@@ -196,12 +194,9 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
-          // select "car", so we will have "cars" in the end
-          autocompleteHelper.pressEnter();
-          helper.waitFor(function(){
-            var $lastLine =  inner$("div").last();
-            return $lastLine.text() === "cars";
-          }).done(done);
+          var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+          expect(suggestions).to.contain("car");
+          done();
         });
       });
     });
@@ -242,7 +237,7 @@ var autocompleteHelper = {
       var evtType = "keydown";
     }
     var e = inner$.Event(evtType);
-    e.which = 13; // enter :|
+    e.keyCode = 13; // enter :|
     inner$("#innerdocbody").trigger(e);
   },
 
@@ -273,5 +268,13 @@ var autocompleteHelper = {
       line = line.next();
     }
     return line;
+  },
+
+  textsOf: function($target){
+    var texts = _.map($target, function(el){
+      return $(el).text();
+    })
+    return texts;
   }
+
 }

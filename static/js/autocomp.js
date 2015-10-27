@@ -131,7 +131,7 @@ var autocomp = {
 		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
 		if($autocomp.is(":visible")){
 			//ENTER PRESSED
-			if(context.evt.which === 13){
+			if(context.evt.keyCode === 13){
         var textReplaced = this.selectSuggestion(context);
         if (textReplaced) {
 					context.evt.preventDefault();
@@ -142,21 +142,21 @@ var autocomp = {
 			}
 
 			//UP PRESSED
-			if(context.evt.which === 38){
+			if(context.evt.keyCode === 38){
 				this.moveSelectionUp();
 				context.evt.preventDefault();
 				return true;
 
 			}
 			//DOWN PRESSED
-			if(context.evt.which === 40){
+			if(context.evt.keyCode === 40){
         this.moveSelectionDown();
 				context.evt.preventDefault();
 				return true;
 			}
-			//ESCAPE TODO: This is not caught. Better we add a close button. For more info see context.evt.which === 32 && context.evt.ctrlKey
+			//ESCAPE TODO: This is not caught. Better we add a close button. For more info see context.evt.keyCode === 32 && context.evt.ctrlKey
 			/*
-			if(context.evt.which === 27){
+			if(context.evt.keyCode === 27){
         autocomp.tempDisabledHelper();
         context.evt.preventDefault();
         $autocomp.hide();
@@ -165,7 +165,7 @@ var autocomp = {
 		}
 
 		//SPACE AND CONTROL PRESSED
-		if(context.evt.which === 32 && context.evt.ctrlKey){
+		if(context.evt.keyCode === 32 && context.evt.ctrlKey){
 			if($autocomp.is(":hidden")){
         autocomp.update(context);
         $autocomp.show();
