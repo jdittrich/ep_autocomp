@@ -1,4 +1,4 @@
-describe("commands auto complete", function(){
+describe("ep_autocomp - commands auto complete", function(){
   //create a new pad before each test run
   beforeEach(function(cb){
     helper.newPad(function(){

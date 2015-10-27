@@ -1,4 +1,4 @@
-describe("show autocomplete suggestions", function(){
+describe("ep_autocomp - show autocomplete suggestions", function(){
 
   beforeEach(function(cb){
     helper.newPad(function(){
