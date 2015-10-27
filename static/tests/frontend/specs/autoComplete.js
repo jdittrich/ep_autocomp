@@ -52,7 +52,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      pressEnter();
+      autocompleteHelper.pressEnter();
       helper.waitFor(function(){
         var $lastLine =  inner$("div").last();
         return $lastLine.text() === "car";
@@ -77,7 +77,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       autocomp.addPostSuggestionSelectedCallback(callback);
 
       // select a suggestion to trigger callback
-      pressEnter();
+      autocompleteHelper.pressEnter();
 
       helper.waitFor(function(){
         return callbackCalled;
@@ -88,7 +88,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
   context("when there is line attributes applied", function(){
 
     it("ignores * in the beginning of line", function(done){
-      addAttributeToLine(0, function(){
+      autocompleteHelper.addAttributeToLine(0, function(){
         var outer$ = helper.padOuter$;
         var inner$ = helper.padInner$;
         var $lastLine =  inner$("div").last();
@@ -96,7 +96,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
-          pressEnter();
+          autocompleteHelper.pressEnter();
           helper.waitFor(function(){
             var $lastLine =  inner$("div").last();
             return $lastLine.text() === "car";
@@ -125,8 +125,8 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   context("when current line has line attribute", function(){
     beforeEach(function(cb) {
-      getLine(3).sendkeys("c");
-      addAttributeToLine(3, cb);
+      autocompleteHelper.getLine(3).sendkeys("c");
+      autocompleteHelper.addAttributeToLine(3, cb);
     });
 
     context("and there is no content after caret", function(){
@@ -142,7 +142,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
-          pressEnter();
+          autocompleteHelper.pressEnter();
           helper.waitFor(function(){
             var $lastLine =  inner$("div").last();
             return $lastLine.text() === "car";
@@ -169,7 +169,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
           // select "car", so we will have "cars" in the end
-          pressEnter();
+          autocompleteHelper.pressEnter();
           helper.waitFor(function(){
             var $lastLine =  inner$("div").last();
             return $lastLine.text() === "cars";
@@ -204,44 +204,46 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 });
 
 /* ********** Helper functions ********** */
+var autocompleteHelper = {
 
-function pressEnter(){
-  var inner$ = helper.padInner$;
-  if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
-    var evtType = "keypress";
-  }else{
-    var evtType = "keydown";
-  }
-  var e = inner$.Event(evtType);
-  e.which = 13; // enter :|
-  inner$("#innerdocbody").trigger(e);
-}
+  pressEnter: function(){
+    var inner$ = helper.padInner$;
+    if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
+      var evtType = "keypress";
+    }else{
+      var evtType = "keydown";
+    }
+    var e = inner$.Event(evtType);
+    e.which = 13; // enter :|
+    inner$("#innerdocbody").trigger(e);
+  },
 
-function pressListButton(){
-  var chrome$ = helper.padChrome$;
-  var $insertunorderedlistButton = chrome$(".buttonicon-insertunorderedlist");
-  $insertunorderedlistButton.click();
-}
+  pressListButton: function(){
+    var chrome$ = helper.padChrome$;
+    var $insertunorderedlistButton = chrome$(".buttonicon-insertunorderedlist");
+    $insertunorderedlistButton.click();
+  },
 
-function addAttributeToLine(lineNum, cb){
-  var inner$ = helper.padInner$;
-  var $targetLine = getLine(lineNum);
-  $targetLine.sendkeys('{mark}');
-  pressListButton();
-  helper.waitFor(function(){
+  addAttributeToLine: function(lineNum, cb){
+    var inner$ = helper.padInner$;
     var $targetLine = getLine(lineNum);
-    return $targetLine.find("ul li").length === 1;
-  }).done(cb);
-}
+    $targetLine.sendkeys('{mark}');
+    this.pressListButton();
+    helper.waitFor(function(){
+      var $targetLine = getLine(lineNum);
+      return $targetLine.find("ul li").length === 1;
+    }).done(cb);
+  },
 
-// first line === getLine(0);
-// second line === getLine(1);
-// ...
-var getLine = function(lineNum){
-  var inner$ = helper.padInner$;
-  var line = inner$("div").first();
-  for (var i = lineNum - 1; i >= 0; i--) {
-    line = line.next();
+  // first line === getLine(0);
+  // second line === getLine(1);
+  // ...
+  getLine: function(lineNum){
+    var inner$ = helper.padInner$;
+    var line = inner$("div").first();
+    for (var i = lineNum - 1; i >= 0; i--) {
+      line = line.next();
+    }
+    return line;
   }
-  return line;
 }

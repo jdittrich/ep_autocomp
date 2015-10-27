@@ -62,7 +62,7 @@ describe("ep_autocomp - commands auto complete", function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function() {
       var $lastLine = inner$('div').last();
-      var context = mockContext($lastLine);
+      var context = navigationHelper.mockContext($lastLine);
 
       // force autocomplete to select first option
       var autocomp = helper.padChrome$.window.autocomp;
@@ -99,21 +99,19 @@ describe("ep_autocomp - commands auto complete", function(){
   })
 })
 
-function disableProcessEvent(){
-  var autocomp = helper.padChrome$.window.autocomp;
-  autocomp.processEvent = false;
-}
+var navigationHelper = {
 
-function mockContext($currentElement){
-  var context = {
-    rep: {
-      lines: {
-        atIndex: function(i) {
-          return {lineNode: $currentElement[0]}
-        }
-      },
-      selEnd: [1],
+  mockContext: function($currentElement){
+    var context = {
+      rep: {
+        lines: {
+          atIndex: function(i) {
+            return {lineNode: $currentElement[0]}
+          }
+        },
+        selEnd: [1],
+      }
     }
+    return context;
   }
-  return context;
 }
