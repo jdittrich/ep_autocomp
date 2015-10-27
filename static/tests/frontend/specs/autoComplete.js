@@ -107,11 +107,11 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   });
 
-  context("when event processing is disabled", function(){
+  context("when edit event processing is disabled", function(){
     it("does not show suggestions", function(done){
       var outer$ = helper.padOuter$;
       var autocomp = helper.padChrome$.window.autocomp;
-      autocomp.processEvent = false;
+      autocomp.processEditEvent = false;
       var inner$ = helper.padInner$;
       var $lastLine =  inner$("div").last();
       $lastLine.sendkeys('c');
@@ -120,6 +120,34 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         expect(outer$('div#autocomp').is(":visible")).to.be(false);
         done();
       }, 500);
+    });
+  });
+
+  context("when key event processing is disabled", function(){
+    it("does not show suggestions", function(done){
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
+
+      //press enter event should not be handled
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.processKeyEvent = false;
+
+      //show suggestions box
+      var $lastLine =  inner$("div").last();
+      $lastLine.sendkeys('c');
+      helper.waitFor(function(){
+        return outer$('div#autocomp').is(":visible");
+      }).done(function(){
+        //trigger event (that should be ignored)
+        autocompleteHelper.pressEnter();
+
+        //verify key event was ignored
+        setTimeout(function(){
+          var $lastLine =  inner$("div").last();
+          expect($lastLine.text()).to.be("c");
+          done();
+        }, 500);
+      })
     });
   });
 

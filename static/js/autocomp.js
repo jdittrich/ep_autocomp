@@ -20,9 +20,11 @@ var autocomp = {
 	//isEnabled: true,//this could be getter/Setter too
 	//isShown: false,
 
-  // flag to allow other plugins to avoid this plugin to process ace events
-  processEvent: true,
-
+  // flags to allow other plugins to avoid this plugin to process ace events
+  // processKeyEvent enables events like typing arrow, enter, etc
+  processKeyEvent: true,
+  // processEditEvent enables events of editing a word
+  processEditEvent: true,
   // flag to allow show suggestions even if no word is typed
   showOnEmptyWords: false,
 
@@ -114,7 +116,7 @@ var autocomp = {
 
 	aceKeyEvent: function(type, context, cb){
     // ACE event processing disable by other plugins
-    if (!autocomp.processEvent) return;
+    if (!autocomp.processKeyEvent) return;
     //precaution
     if(!$autocomp||!context) return;
     //Dirty hack, see autocomp.tempDisabled and autocomp.tempDisabledHelper
@@ -237,7 +239,7 @@ var autocomp = {
     $autocomp.hide();
   },
 	aceEditEvent:function(type, context, cb){
-    if (!autocomp.processEvent) return;
+    if (!autocomp.processEditEvent) return;
 		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
 		autocomp.update(context);
 	},
