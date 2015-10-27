@@ -10,7 +10,7 @@ describe("show autocomplete suggestions", function(){
   });
 
 
-  it("displays suggestions", function(done){
+  it("displays suggestions when user types a word that matches others from the text", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
     var $lastLine =  inner$("div").last();
@@ -25,7 +25,7 @@ describe("show autocomplete suggestions", function(){
     });
   });
 
-  it("hides suggestions", function(done){
+  it("hides suggestions when user types a word that does not match any other from the text", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -44,7 +44,7 @@ describe("show autocomplete suggestions", function(){
     });
   });
 
-  it("applies selected suggestion", function(done){
+  it("applies selected suggestion when user presses ENTER", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
     var $lastLine =  inner$("div").last();
@@ -56,6 +56,31 @@ describe("show autocomplete suggestions", function(){
       helper.waitFor(function(){
         var $lastLine =  inner$("div").last();
         return $lastLine.text() === "car";
+      }).done(done);
+    });
+  });
+
+  it("calls the callback when user selects a suggestion", function(done){
+    var outer$ = helper.padOuter$;
+    var inner$ = helper.padInner$;
+    var $lastLine =  inner$("div").last();
+    $lastLine.sendkeys('c');
+    helper.waitFor(function(){
+      return outer$('div#autocomp').is(":visible");
+    }).done(function(){
+      // define a callback to be provided to autocomp
+      var callbackCalled = false;
+      var callback = function() {
+        callbackCalled = true;
+      };
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.addPostSuggestionSelectedCallback(callback);
+
+      // select a suggestion to trigger callback
+      pressEnter();
+
+      helper.waitFor(function(){
+        return callbackCalled;
       }).done(done);
     });
   });

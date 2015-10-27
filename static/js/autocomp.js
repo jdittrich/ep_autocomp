@@ -26,6 +26,23 @@ var autocomp = {
   // flag to allow show suggestions even if no word is typed
   showOnEmptyWords: false,
 
+  // collection of callbacks to be called after user selects a suggestion from the list
+  postSuggestionSelectedCallbacks: [],
+  addPostSuggestionSelectedCallback: function(callback) {
+    this.postSuggestionSelectedCallbacks.push(callback);
+  },
+  resetPostSuggestionSelectedCallbacks: function() {
+    this.postSuggestionSelectedCallbacks = [];
+  },
+  callPostSuggestionSelectedCallbacks: function(done) {
+    _.each(this.postSuggestionSelectedCallbacks, function(callback) {
+      callback();
+    });
+
+    done();
+  },
+
+
 	config:{
 		//move this ot external JSON. Save Regexes as Strings, parse them when needed.
 		hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
@@ -96,16 +113,14 @@ var autocomp = {
 	},
 
 	aceKeyEvent: function(type, context, cb){
+    // ACE event processing disable by other plugins
     if (!autocomp.processEvent) return;
-		if(!$autocomp||!context){//precaution
-			return;
-		}
-		if(autocomp.tempDisabled){ //Dirty hack, see autocomp.tempDisabled and autocomp.tempDisabledHelper
-			return;
-		}
-		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
-
-		var offsetFromContainer;
+    //precaution
+    if(!$autocomp||!context) return;
+    //Dirty hack, see autocomp.tempDisabled and autocomp.tempDisabledHelper
+    if(autocomp.tempDisabled) return;
+    //if disabled in settings
+    if(!$('#options-autocomp').is(':checked')) return;
 
 		//if not menu not shown, don't prevent defaults
 
@@ -201,7 +216,15 @@ var autocomp = {
     var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
     //the element the cursor is in
     var currentElement = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
-    if(textToInsert!==undefined){
+    if(textToInsert !== undefined){
+      // register listener to be able to call all callbacks when sendkeys is done
+      $(currentElement).on("sendkeys", function() {
+        autocomp.callPostSuggestionSelectedCallbacks(function() {
+          // unregister listener to avoid duplicate calls in the future
+          $(currentElement).off("sendkeys");
+        });
+      });
+
       $(currentElement).sendkeys(textToInsert);
       $autocomp.hide();
       autocomp.tempDisabledHelper();
