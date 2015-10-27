@@ -2,7 +2,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   beforeEach(function(cb){
     helper.newPad(function(){
-      enableAutocomplete(true, function(){
+      resetFlagsAndEnableAutocomplete(function(){
         writeWordsWithC(cb);
       });
     });

@@ -2,7 +2,7 @@ describe("ep_autocomp - commands auto complete", function(){
   //create a new pad before each test run
   beforeEach(function(cb){
     helper.newPad(function(){
-      enableAutocomplete(true, function(){
+      resetFlagsAndEnableAutocomplete(function(){
         writeWordsWithC(cb);
       });
     });

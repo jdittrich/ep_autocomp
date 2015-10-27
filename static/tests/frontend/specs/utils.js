@@ -12,7 +12,7 @@ var writeWordsWithC = function(cb){
 }
 
 
-var enableAutocomplete = function(shouldEnableAutocomplete, callback) {
+var enableAutocomplete = function(callback) {
   var chrome$ = helper.padChrome$;
 
   //click on the settings button to make settings visible
@@ -21,10 +21,25 @@ var enableAutocomplete = function(shouldEnableAutocomplete, callback) {
 
   //check "enable autocompletion"
   var $autoComplete = chrome$('#options-autocomp')
-  if ($autoComplete.is(':checked') !== shouldEnableAutocomplete) $autoComplete.click();
+  if (!$autoComplete.is(':checked')) $autoComplete.click();
 
   // hide settings again
   $settingsButton.click();
 
   callback();
+}
+
+
+var resetFlagsAndEnableAutocomplete = function(callback) {
+  resetFlags();
+  enableAutocomplete(callback);
+}
+
+// reset flags to avoid eventual conflicts with other plugins extending ep_autocomp
+var resetFlags = function(){
+  var autocomp = helper.padChrome$.window.autocomp;
+  autocomp.processKeyEvent = true;
+  autocomp.processEditEvent = true;
+  autocomp.showOnEmptyWords = false;
+  return;
 }
