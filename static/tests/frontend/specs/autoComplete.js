@@ -133,7 +133,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       autocomp.processKeyEvent = false;
 
       //show suggestions box
-      var $lastLine =  inner$("div").last();
+      var $lastLine =  getLine(3);
       $lastLine.sendkeys('c');
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
@@ -143,7 +143,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
         //verify key event was ignored
         setTimeout(function(){
-          var $lastLine =  inner$("div").last();
+          var $lastLine =  getLine(3);
           expect($lastLine.text()).to.be("c");
           done();
         }, 500);
@@ -250,6 +250,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     });
 
   });
+
 
 });
 

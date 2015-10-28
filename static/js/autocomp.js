@@ -245,14 +245,14 @@ var autocomp = {
 		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
 		autocomp.update(context);
 	},
-	update:function(context, fixedSuggestions){
+	update:function(context, fixedSuggestions, customRegex){
 
 		if(context.rep.selStart === null) return;
     //as edit event is called when anyone edits, we must ensure it is the current user
 		if(!autocomp.isEditByMe(context)) return;
 
     //get the word which is being typed
-    var partialWord = this.getCurrentPartialWord(context);
+    var partialWord = this.getCurrentPartialWord(context, customRegex);
 
     //hide suggestions if no word is typed
     var wordIsEmpty = partialWord.length === 0;
@@ -540,12 +540,12 @@ var autocomp = {
 			hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
 		true);//true, since input array is already sorted
 	},
-  getCurrentPartialWord:function(context){
+  getCurrentPartialWord:function(context, customRegex){
     //TODO: make section marker dependend on the autocomp.config.regexToFind.
     //what is the  section to be considered? Usually, this will be everything which is not a space.
     //The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end.
     //(To understand better, just paste into regexpal.com)
-    var sectionMarker = /[\S]*$/;
+    var sectionMarker = customRegex || /[\S]*$/;
 
     var caretColumnPosition = this.getCaretColumnOnline(context);
     var currentLine         = this.getCurrentLine(context);
