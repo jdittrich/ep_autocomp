@@ -136,7 +136,7 @@ var autocomp = {
 		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
 		if($autocomp.is(":visible")){
 			//ENTER PRESSED
-			if(context.evt.keyCode === 13){
+			if(this.enterPressed(context.evt)){
         var textReplaced = this.selectSuggestion(context);
         if (textReplaced) {
 					context.evt.preventDefault();
@@ -147,14 +147,13 @@ var autocomp = {
 			}
 
 			//UP PRESSED
-			if(context.evt.keyCode === 38){
+			if(this.upPressed(context.evt)){
 				this.moveSelectionUp();
 				context.evt.preventDefault();
 				return true;
-
 			}
 			//DOWN PRESSED
-			if(context.evt.keyCode === 40){
+			if(this.downPressed(context.evt)){
         this.moveSelectionDown();
 				context.evt.preventDefault();
 				return true;
@@ -170,7 +169,7 @@ var autocomp = {
 		}
 
 		//SPACE AND CONTROL PRESSED
-		if(context.evt.keyCode === 32 && context.evt.ctrlKey){
+		if(this.ctrlSpacePressed(context.evt)){
 			if($autocomp.is(":hidden")){
         autocomp.update(context);
         $autocomp.show();
@@ -181,6 +180,20 @@ var autocomp = {
 			return true;
 		}
 	},
+  enterPressed: function(evt) {
+    return evt.keyCode === 13;
+  },
+  upPressed: function(evt) {
+    // check for shift to avoid confusing "↑" with "&" (shift+7)
+    return !evt.shiftKey && evt.keyCode === 38;
+  },
+  downPressed: function(evt) {
+    // check for shift to avoid confusing "↓" with "(" (shift+9)
+    return !evt.shiftKey && evt.keyCode === 40;
+  },
+  ctrlSpacePressed: function(evt) {
+    return evt.ctrlKey && evt.keyCode === 32;
+  },
   moveSelectionDown:function(){
     //only do it if the selection is not on the last element already
     if(!($list.children().last().hasClass("selected"))){
