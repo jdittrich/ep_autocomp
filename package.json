@@ -3,6 +3,16 @@
   "version": "0.0.2",
   "description": "autocompletion",
   "author": "Jan Dittrich, <d_jan@ymail.com>",
+  "contributors": [
+    {
+      "name": "Luiza Pagliari",
+      "email": "lpagliari@gmail.com"
+    },
+    {
+      "name": "Joas Souza",
+      "email": "joassouzasantos@gmail.com"
+    }
+  ],
   "engines": {
     "node": ">= 0.6.0"
   },

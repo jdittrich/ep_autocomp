@@ -29,6 +29,9 @@ var autocomp = {
   showOnEmptyWords: false,
   // flag to allow show suggestions with/without case sensitive
   caseSensitiveMatch: true,
+  // flag to consider Latin characters as their non-Latin equivalents
+  // (user types "a" and we show suggestions like "ál", "ão", etc.)
+  ignoreLatinCharacters: false,
 
   // collection of callbacks to be called after user selects a suggestion from the list
   postSuggestionSelectedCallbacks: [],
@@ -310,19 +313,51 @@ var autocomp = {
 		return filteredSuggestions;
 	},
 
-  subtextOfSuggestion:function(possibleSuggestion, partialWord){
-    var isSubText;
-    // check if it should be considered matches without matching case
-    if (this.caseSensitiveMatch){
-      isSubText = (possibleSuggestion.indexOf(partialWord) === 0);
-    }else{
-      //turn possibleSuggestion and partialWord to lower case
-      var suggestionLowerCase = possibleSuggestion.toLowerCase();
-      var partialWordLowerCase = partialWord.toLowerCase();
-      //compares words without case
-      isSubText = (suggestionLowerCase.indexOf(partialWordLowerCase) === 0);
+  subtextOfSuggestion: function(possibleSuggestion, partialWord){
+    var transformedPossibleSuggestion = possibleSuggestion;
+    var transformedPartialWord        = partialWord;
+
+    // check if it should ignore Latin characters
+    if (this.ignoreLatinCharacters) {
+      transformedPossibleSuggestion = this.replaceLatinCharacters(transformedPossibleSuggestion);
     }
+
+    // check if it should be considered matches without matching case
+    if (!this.caseSensitiveMatch) {
+      transformedPossibleSuggestion = transformedPossibleSuggestion.toLowerCase();
+      transformedPartialWord        = transformedPartialWord.toLowerCase();
+    }
+
+    // compare words
+    var isSubText = (transformedPossibleSuggestion.indexOf(transformedPartialWord) === 0);
+
     return isSubText;
+  },
+
+  /*
+     Replace Latin characters with non-Latin equivalents.
+     Currently replaces (both uppercase and lowercase):
+       á, à, ä, ã, â,
+       é, è, ë, ê,
+       í, ì, ï, î,
+       ó, ò, ö, õ, ô,
+       ú, ù, ü, û,
+       ç
+   */
+  replaceLatinCharacters: function(originalText) {
+    return originalText.
+      replace(/[àáäãâ]/g, "a").
+      replace(/[ÀÁÄÃÂ]/g, "A").
+      replace(/[èéëê]/g, "e").
+      replace(/[ÈÉËÊ]/g, "E").
+      replace(/[ìíïî]/g, "i").
+      replace(/[ÌÍÏÎ]/g, "I").
+      replace(/[òóöõô]/g, "o").
+      replace(/[ÒÓÖÕÔ]/g, "O").
+      replace(/[ùúüû]/g, "u").
+      replace(/[ÙÚÜÛ]/g, "U").
+      replace(/[ç]/g, "c").
+      replace(/[Ç]/g, "C");
   },
 
 	cursorPosition:function(context){
