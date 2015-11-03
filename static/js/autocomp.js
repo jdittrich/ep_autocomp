@@ -244,13 +244,28 @@ var autocomp = {
           $(currentElement).off("sendkeys");
         });
       });
-
-      $(currentElement).sendkeys(textToInsert);
+      // Empty lines always have a <br>, so due to problems with inserting text
+      // with sendkeys, in this case, we need to insert the html directly
+      var emptyLine = $(currentElement).find("br");
+      var isEmpty = emptyLine.length;
+      if (isEmpty){
+        emptyLine.replaceWith("<span>" + textToInsert + "</span>");
+        this.adjustCaretPosition(currentElement, textToInsert);
+      }else{
+        $(currentElement).sendkeys(textToInsert);
+      }
       $autocomp.hide();
       autocomp.tempDisabledHelper();
       suggestionFound = true;
     }
     return suggestionFound;
+  },
+  adjustCaretPosition:function(currentElement, textToInsert){
+    var rightarrows = "";
+    for (var i = textToInsert.length - 1; i >= 0; i--) {
+      rightarrows += '{rightarrow}';
+    };
+    $(currentElement).sendkeys(rightarrows);
   },
   closeSuggestionBox:function(){
     autocomp.tempDisabledHelper();

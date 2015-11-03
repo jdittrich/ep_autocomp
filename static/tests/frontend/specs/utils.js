@@ -3,8 +3,8 @@ var writeWordsWithC = function(cb){
   var inner$ = helper.padInner$;
   var $firstTextElement = inner$("div").first();
   //select this text element
-  $firstTextElement.sendkeys('{selectall}');
-  $firstTextElement.sendkeys('car{enter}chrome{enter}couch{enter}{enter}');
+  $firstTextElement.sendkeys('{selectall}{del}');
+  $firstTextElement.html('car<br/>chrome<br/>couch<br/><br/>');
   helper.waitFor(function(){
     var $firstTextElement =  inner$("div").first();
     return $firstTextElement.text() === "car";
