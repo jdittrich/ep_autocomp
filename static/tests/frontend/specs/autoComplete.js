@@ -2,8 +2,10 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   beforeEach(function(cb){
     helper.newPad(function(){
-      resetFlagsAndEnableAutocomplete(function(){
-        writeWordsWithC(cb);
+      clearPad(function() {
+        resetFlagsAndEnableAutocomplete(function(){
+          writeWordsWithC(cb);
+        });
       });
     });
     this.timeout(60000);
@@ -14,6 +16,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
     var $lastLine =  inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
@@ -31,6 +34,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
     // first make sure suggestions are displayed
     var $lastLine =  inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
@@ -47,15 +51,41 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
   it("applies selected suggestion when user presses ENTER", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
-    var $lastLine =  autocompleteHelper.getLine(3);
+    var $lastLine = autocompleteHelper.getLine(3);
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
       autocompleteHelper.pressEnter();
       helper.waitFor(function(){
-        var $lastLine =  autocompleteHelper.getLine(3);
+        var $lastLine = autocompleteHelper.getLine(3);
         return $lastLine.text() === "car";
+      }).done(done);
+    });
+  });
+
+  it("applies selected suggestion when clicks on it on the suggestion box", function(done){
+    var outer$ = helper.padOuter$;
+    var inner$ = helper.padInner$;
+
+    // type something to show suggestions
+    var $lastLine = autocompleteHelper.getLine(3);
+    $lastLine.sendkeys('{selectall}');
+    $lastLine.sendkeys('c');
+
+    helper.waitFor(function(){
+      return outer$('div#autocomp').is(":visible");
+    }).done(function(){
+      // click on last suggestion ("couch")
+      var $suggestions = outer$('div#autocomp li');
+      var $couchSuggestion = $suggestions.last();
+      $couchSuggestion.click();
+
+      // check if last suggestion was inserted
+      helper.waitFor(function(){
+        var $lastLine = autocompleteHelper.getLine(3);
+        return $lastLine.text() === "couch";
       }).done(done);
     });
   });
@@ -64,6 +94,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
     var $lastLine =  inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
@@ -91,14 +122,15 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       autocompleteHelper.addAttributeToLine(0, function(){
         var outer$ = helper.padOuter$;
         var inner$ = helper.padInner$;
-        var $lastLine =  autocompleteHelper.getLine(3);
+        var $lastLine = autocompleteHelper.getLine(3);
+        $lastLine.sendkeys('{selectall}');
         $lastLine.sendkeys('c');
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
           autocompleteHelper.pressEnter();
           helper.waitFor(function(){
-            var $lastLine =  autocompleteHelper.getLine(3);
+            var $lastLine = autocompleteHelper.getLine(3);
             return $lastLine.text() === "car";
           }).done(done);
         });
@@ -114,6 +146,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       autocomp.processEditEvent = false;
       var inner$ = helper.padInner$;
       var $lastLine =  inner$("div").last();
+      $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
       //we have to give enough time to suggestions box be shown
       setTimeout(function() {
@@ -133,7 +166,8 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       autocomp.processKeyEvent = false;
 
       //show suggestions box
-      var $lastLine =  autocompleteHelper.getLine(3);
+      var $lastLine = autocompleteHelper.getLine(3);
+      $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
@@ -143,7 +177,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
         //verify key event was ignored
         setTimeout(function(){
-          var $lastLine =  autocompleteHelper.getLine(3);
+          var $lastLine = autocompleteHelper.getLine(3);
           expect($lastLine.text()).to.be("c");
           done();
         }, 500);
@@ -153,7 +187,9 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   context("when current line has line attribute", function(){
     beforeEach(function(cb) {
-      autocompleteHelper.getLine(3).sendkeys("c");
+      var $lastLine = autocompleteHelper.getLine(3);
+      $lastLine.sendkeys('{selectall}');
+      $lastLine.sendkeys("c");
       autocompleteHelper.addAttributeToLine(3, cb);
     });
 
@@ -164,7 +200,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         var inner$ = helper.padInner$;
 
         //using contents was the only way we found to set content of a list item
-        var $lastLine =  inner$("div").last().find("ul li").contents();
+        var $lastLine = inner$("div").last().find("ul li").contents();
 
         $lastLine.sendkeys('a');
         helper.waitFor(function(){
@@ -210,10 +246,10 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       cb();
     });
 
-    it("displays suggestions without having to type anything", function(done) {
+    it("displays suggestions without having to type a word", function(done) {
       var outer$ = helper.padOuter$;
       var inner$ = helper.padInner$;
-      var $lastLine =  inner$("div").last();
+      var $lastLine = inner$("div").last();
 
       // type something to display suggestions
       $lastLine.sendkeys(" ");
@@ -247,10 +283,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   });
 
-
-
   context("when suggestions are not case sensitive", function(){
-
     // disable case sensitive matches
     beforeEach(function(){
       var autocomp = helper.padChrome$.window.autocomp;
@@ -258,9 +291,11 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     })
 
     it("shows suggestions in uppercase and lowercase", function(done){
-      var $lastLine = autocompleteHelper.getLine(3);
       var outer$ = helper.padOuter$;
+
       //write CAR in the last line, duplicated word uppercase
+      var $lastLine = autocompleteHelper.getLine(3);
+      $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('CAR CA');
 
       helper.waitFor(function(){
