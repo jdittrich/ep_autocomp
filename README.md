@@ -2,21 +2,32 @@
 
 ![screeshot](http://i.imgur.com/2uqR3Tg.png)
 
-It’s  alpha-ish, but works. 
-Please contribute and/or file bugs. 
+It’s beta, but works.
+Please contribute and/or file bugs.
 
 ## Customization
-In its preconfigured form it completes words (searches the document for words, suggests existing words if you type them again). This add-on will require configuration if you want it to autocomplete anything else. 
+In its preconfigured form it completes words (searches the document for words, suggests existing words if you type them again). This add-on will require configuration if you want it to autocomplete anything else.
+
+### Pre-configured flags
+
+* `processKeyEvent`: define if ep_autocomp should handle ace key events (arrow keys, ENTER, etc). Default: true
+* `processEditEvent`: define if ep_autocomp should handle ace edit events (user editing a word). Default: true
+* `showOnEmptyWords`: define if suggestions should be displayed even when user didn't type any word. Useful for plugins that control when suggestions are displayed or not. Default: false
+* `caseSensitiveMatch`: define if suggestions should respect case of typed words. Default: true
+* `ignoreLatinCharacters`: define if Latin characters should be considered the same as their non-Latin equivalents. Ex: user types "a", suggestions include words like "ál", "ão", etc. Default: false
+
+
+### Advanced customization
 
 See the value `autocomp.config` in the  `ep_autocomp/static/js/autocomp.js` file
 for customizing simple cases and the value `autocomp.getPossibleSuggestions` for more complex customizations.
 
-Originally, this was written to autocomplete hashtags, you may want to complet from list of predefined keywords or from a hash of usernames after typing an *@* etc. There are some examples in the sourcecode. 
+Originally, this was written to autocomplete hashtags, you may want to complet from list of predefined keywords or from a hash of usernames after typing an *@* etc. There are some examples in the sourcecode.
 
 ## Install
 Open terminal, navigate  to your etherpad folder and: type `npm install ep_autocomp` OR type `git clone https://github.com/jdittrich/ep_autocomp.git node_modules/ep_autocomp`
 
-# Autocompletion 
+# Autocompletion
 
 Enable under settings
 

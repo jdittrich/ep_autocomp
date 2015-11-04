@@ -29,6 +29,9 @@ var autocomp = {
   showOnEmptyWords: false,
   // flag to allow show suggestions with/without case sensitive
   caseSensitiveMatch: true,
+  // flag to consider Latin characters as their non-Latin equivalents
+  // (user types "a" and we show suggestions like "ál", "ão", etc.)
+  ignoreLatinCharacters: false,
 
   // collection of callbacks to be called after user selects a suggestion from the list
   postSuggestionSelectedCallbacks: [],
@@ -133,7 +136,7 @@ var autocomp = {
 		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
 		if($autocomp.is(":visible")){
 			//ENTER PRESSED
-			if(context.evt.keyCode === 13){
+			if(this.enterPressed(context.evt)){
         var textReplaced = this.selectSuggestion(context);
         if (textReplaced) {
 					context.evt.preventDefault();
@@ -144,14 +147,13 @@ var autocomp = {
 			}
 
 			//UP PRESSED
-			if(context.evt.keyCode === 38){
+			if(this.upPressed(context.evt)){
 				this.moveSelectionUp();
 				context.evt.preventDefault();
 				return true;
-
 			}
 			//DOWN PRESSED
-			if(context.evt.keyCode === 40){
+			if(this.downPressed(context.evt)){
         this.moveSelectionDown();
 				context.evt.preventDefault();
 				return true;
@@ -167,7 +169,7 @@ var autocomp = {
 		}
 
 		//SPACE AND CONTROL PRESSED
-		if(context.evt.keyCode === 32 && context.evt.ctrlKey){
+		if(this.ctrlSpacePressed(context.evt)){
 			if($autocomp.is(":hidden")){
         autocomp.update(context);
         $autocomp.show();
@@ -178,6 +180,20 @@ var autocomp = {
 			return true;
 		}
 	},
+  enterPressed: function(evt) {
+    return evt.keyCode === 13;
+  },
+  upPressed: function(evt) {
+    // check for shift to avoid confusing "↑" with "&" (shift+7)
+    return !evt.shiftKey && evt.keyCode === 38;
+  },
+  downPressed: function(evt) {
+    // check for shift to avoid confusing "↓" with "(" (shift+9)
+    return !evt.shiftKey && evt.keyCode === 40;
+  },
+  ctrlSpacePressed: function(evt) {
+    return evt.ctrlKey && evt.keyCode === 32;
+  },
   moveSelectionDown:function(){
     //only do it if the selection is not on the last element already
     if(!($list.children().last().hasClass("selected"))){
@@ -228,13 +244,28 @@ var autocomp = {
           $(currentElement).off("sendkeys");
         });
       });
-
-      $(currentElement).sendkeys(textToInsert);
+      // Empty lines always have a <br>, so due to problems with inserting text
+      // with sendkeys, in this case, we need to insert the html directly
+      var emptyLine = $(currentElement).find("br");
+      var isEmpty = emptyLine.length;
+      if (isEmpty){
+        emptyLine.replaceWith("<span>" + textToInsert + "</span>");
+        this.adjustCaretPosition(currentElement, textToInsert);
+      }else{
+        $(currentElement).sendkeys(textToInsert);
+      }
       $autocomp.hide();
       autocomp.tempDisabledHelper();
       suggestionFound = true;
     }
     return suggestionFound;
+  },
+  adjustCaretPosition:function(currentElement, textToInsert){
+    var rightarrows = "";
+    for (var i = textToInsert.length - 1; i >= 0; i--) {
+      rightarrows += '{rightarrow}';
+    };
+    $(currentElement).sendkeys(rightarrows);
   },
   closeSuggestionBox:function(){
     autocomp.tempDisabledHelper();
@@ -310,19 +341,51 @@ var autocomp = {
 		return filteredSuggestions;
 	},
 
-  subtextOfSuggestion:function(possibleSuggestion, partialWord){
-    var isSubText;
-    // check if it should be considered matches without matching case
-    if (this.caseSensitiveMatch){
-      isSubText = (possibleSuggestion.indexOf(partialWord) === 0);
-    }else{
-      //turn possibleSuggestion and partialWord to lower case
-      var suggestionLowerCase = possibleSuggestion.toLowerCase();
-      var partialWordLowerCase = partialWord.toLowerCase();
-      //compares words without case
-      isSubText = (suggestionLowerCase.indexOf(partialWordLowerCase) === 0);
+  subtextOfSuggestion: function(possibleSuggestion, partialWord){
+    var transformedPossibleSuggestion = possibleSuggestion;
+    var transformedPartialWord        = partialWord;
+
+    // check if it should ignore Latin characters
+    if (this.ignoreLatinCharacters) {
+      transformedPossibleSuggestion = this.replaceLatinCharacters(transformedPossibleSuggestion);
     }
+
+    // check if it should be considered matches without matching case
+    if (!this.caseSensitiveMatch) {
+      transformedPossibleSuggestion = transformedPossibleSuggestion.toLowerCase();
+      transformedPartialWord        = transformedPartialWord.toLowerCase();
+    }
+
+    // compare words
+    var isSubText = (transformedPossibleSuggestion.indexOf(transformedPartialWord) === 0);
+
     return isSubText;
+  },
+
+  /*
+     Replace Latin characters with non-Latin equivalents.
+     Currently replaces (both uppercase and lowercase):
+       á, à, ä, ã, â,
+       é, è, ë, ê,
+       í, ì, ï, î,
+       ó, ò, ö, õ, ô,
+       ú, ù, ü, û,
+       ç
+   */
+  replaceLatinCharacters: function(originalText) {
+    return originalText.
+      replace(/[àáäãâ]/g, "a").
+      replace(/[ÀÁÄÃÂ]/g, "A").
+      replace(/[èéëê]/g, "e").
+      replace(/[ÈÉËÊ]/g, "E").
+      replace(/[ìíïî]/g, "i").
+      replace(/[ÌÍÏÎ]/g, "I").
+      replace(/[òóöõô]/g, "o").
+      replace(/[ÒÓÖÕÔ]/g, "O").
+      replace(/[ùúüû]/g, "u").
+      replace(/[ÙÚÜÛ]/g, "U").
+      replace(/[ç]/g, "c").
+      replace(/[Ç]/g, "C");
   },
 
 	cursorPosition:function(context){
