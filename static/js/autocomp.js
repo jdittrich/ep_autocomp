@@ -41,14 +41,11 @@ var autocomp = {
   resetPostSuggestionSelectedCallbacks: function() {
     this.postSuggestionSelectedCallbacks = [];
   },
-  callPostSuggestionSelectedCallbacks: function(done) {
+  callPostSuggestionSelectedCallbacks: function() {
     _.each(this.postSuggestionSelectedCallbacks, function(callback) {
       callback();
     });
-
-    done();
   },
-
 
 	config:{
 		//move this ot external JSON. Save Regexes as Strings, parse them when needed.
@@ -71,8 +68,8 @@ var autocomp = {
 			autocomp.tempDisabled=false;
 		},100);
 	},
-	//showAutocomp:function(){},
-	createAutocompHTML:function(filteredSuggestions,cursorPosition){
+
+	createAutocompHTML: function(filteredSuggestions, caretPosition, context){
 	/*
 	creates the dom element for the menu.
 
@@ -82,41 +79,55 @@ var autocomp = {
 			fullText: string containing the full text, e.g. "nightingale"
 			complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
 		}
-	cursorPosition: an getBoundingClientRect() with the properties top and left in pixel.
+	caretPosition: an getBoundingClientRect() with the properties top and left in pixel.
 
 	returns: ?
 	*/
-		if(!filteredSuggestions||!cursorPosition){
+		if(!filteredSuggestions || !caretPosition){
 			console.log("insufficent attributes");
-			return;} //precaution
-		if(filteredSuggestions.length===0){
+			return;
+    } //precaution
+
+		if(filteredSuggestions.length === 0){
 			$autocomp.hide();
 		}
-
 
 		$list.empty();
 
 		//CREATE DOM ELEMENTS
 		var listEntries = [];
-		$.each(filteredSuggestions, function(index,suggestion){
+		$.each(filteredSuggestions, function(index, suggestion){
 			// create a dom element (li) for each suggestion
-			listEntries.push(
-				$("<li/>",{
-					"class":"ep_autocomp-listentry",
-					"text":suggestion.fullText
-				}).data(
-					"complementary",suggestion.complementaryString //give the complementary string along.
-				)//end $
-			); //end push
+      var listEntry = $("<li/>",
+        {
+          "class": "ep_autocomp-listentry",
+          "text": suggestion.fullText
+        }).data(
+          "complementary", suggestion.complementaryString //give the complementary string along.
+        );
+
+        // add listener to select suggestion on click
+        listEntry.click(function() {
+          // replace current selected suggestion with this entry
+          $(this).siblings(".selected").removeClass("selected");
+          $(this).addClass("selected");
+
+          // replace text with this suggestion
+          autocomp.selectSuggestion(context);
+        });
+			listEntries.push(listEntry);
 		}); //end each-function
+
+    // make first suggestion marked as selected
 		$(listEntries[0]).addClass("selected");
 
-		$list.append(listEntries); //...append all list entries holding the suggestions
-		//appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody'));//append to dom //remove this
+    // append all list entries holding the suggestions
+		$list.append(listEntries);
 
+    // show suggestions next to caret position
 		$autocomp
 			.show()
-			.css({top: cursorPosition.top, left: cursorPosition.left});
+			.css({top: caretPosition.top, left: caretPosition.left});
 	},
 
 	aceKeyEvent: function(type, context, cb){
@@ -133,7 +144,7 @@ var autocomp = {
 
 		//if key is ↑ , choose next option, prevent default
 		//if key is ↓ , choose next option, prevent default
-		//if key is ENTER, read out the complementation, close autocomplete menu and input it at cursor. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
+		//if key is ENTER, read out the complementation, close autocomplete menu and input it at caret. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
 		if($autocomp.is(":visible")){
 			//ENTER PRESSED
 			if(this.enterPressed(context.evt)){
@@ -234,15 +245,14 @@ var autocomp = {
   selectSuggestion:function(context){
     var suggestionFound = false;
     var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
-    //the element the cursor is in
+    //the element the caret is in
     var currentElement = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
     if(textToInsert !== undefined){
       // register listener to be able to call all callbacks when sendkeys is done
       $(currentElement).on("sendkeys", function() {
-        autocomp.callPostSuggestionSelectedCallbacks(function() {
-          // unregister listener to avoid duplicate calls in the future
-          $(currentElement).off("sendkeys");
-        });
+        // unregister listener to avoid duplicate calls in the future
+        $(currentElement).off("sendkeys");
+        autocomp.callPostSuggestionSelectedCallbacks();
       });
       // Empty lines always have a <br>, so due to problems with inserting text
       // with sendkeys, in this case, we need to insert the html directly
@@ -300,8 +310,8 @@ var autocomp = {
 			return;
 		}
 
-		var cursorPosition = autocomp.cursorPosition(context);
-		autocomp.createAutocompHTML(filteredSuggestions,cursorPosition);
+		var caretPosition = autocomp.caretPosition(context);
+		autocomp.createAutocompHTML(filteredSuggestions, caretPosition, context);
 	},
 	filterSuggestionList:function(partialWord,possibleSuggestions){
 		/*
@@ -388,10 +398,10 @@ var autocomp = {
       replace(/[Ç]/g, "C");
   },
 
-	cursorPosition:function(context){
+	caretPosition:function(context){
 		/*
 		gets: context object from a ace editor event (e.g. aceEditEvent)
-		returns: x and y value for the position of the cursor measured in pixel.
+		returns: x and y value for the position of the caret measured in pixel.
 		Should work in any other context too (if you need that functionality in another etherpad addon)
 
 		useful to know:
@@ -407,8 +417,8 @@ var autocomp = {
           took place, many spans if a lot of different bold, colored etc. text is there. But: the amount of nesting varies
           (one span may have a <b>, in which is a <i> etc. and instead of spans we may have code or the like as well.
 
-		In this function, we will determine the div the cursor is in and clone that div and its style. Than, in the clone, we find
-    the corresponding subnode the cursor is in, than the offset in the corresponding text node the cursor is in.
+		In this function, we will determine the div the caret is in and clone that div and its style. Than, in the clone, we find
+    the corresponding subnode the caret is in, than the offset in the corresponding text node the caret is in.
 		Than we insert a span exactly there and get its position.
 		Than we clean up again, cause this is messy stuff.
 		*/
@@ -418,13 +428,13 @@ var autocomp = {
     var $cloneChildNode = this.cloneNodeWithStyle($childNode);
 
 		//
-		// In the following section we insert a DOM node where the cursor is.
+		// In the following section we insert a DOM node where the caret is.
 		//
 
-    //how many characters are between the start of the element and the cursor?
+    //how many characters are between the start of the element and the caret?
 		var leftoverString = $cloneChildNode.text().length - (counter - context.rep.selEnd[1]);
-    var targetNode = $cloneChildNode[0].childNodes[0]; // the subnode our cursor is in.
-		var targetNodeText = targetNode.nodeValue || ""; //get the text of the subnode our cursor is in.
+    var targetNode = $cloneChildNode[0].childNodes[0]; // the subnode our caret is in.
+		var targetNodeText = targetNode.nodeValue || ""; //get the text of the subnode our caret is in.
 
 		var span = document.createElement("span"); //create a helper span to be inserted later
 		span.appendChild(document.createTextNode('X'));//…and give it a content.
@@ -435,46 +445,46 @@ var autocomp = {
 		// Remove the existing text
 		$cloneChildNode.text("");
 
-		// reinsert the text, but with the additional node at cursor position
+		// reinsert the text, but with the additional node at caret position
 
-		$cloneChildNode[0].appendChild(document.createTextNode(textBeforeCaret)); //insert text before cursor
-		$cloneChildNode[0].appendChild(span); //insert element at cursor position.
-		$cloneChildNode[0].appendChild(document.createTextNode(textAfterCaret)); //insert text after cursor
+		$cloneChildNode[0].appendChild(document.createTextNode(textBeforeCaret)); //insert text before caret
+		$cloneChildNode[0].appendChild(span); //insert element at caret position.
+		$cloneChildNode[0].appendChild(document.createTextNode(textAfterCaret)); //insert text after caret
 
-		$cloneChildNode.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //In order to see where the node we added that the cursor position is, we need to insert it into the document. We do not append it in the inner editor (messes with ace), but put it in the outer one.
+		$cloneChildNode.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //In order to see where the node we added that the caret position is, we need to insert it into the document. We do not append it in the inner editor (messes with ace), but put it in the outer one.
 
-		var cursorPosition = $(span).offset(); //now we get the position of the element which was inserted at the cursor position
+		var caretPosition = $(span).offset(); //now we get the position of the element which was inserted at the caret position
 		var scrollYPos = $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position to take it into account.
 
 		$cloneChildNode.remove(); //clean up again.
 
 		return {
-			top: (cursorPosition.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
-			left:cursorPosition.left
+			top: (caretPosition.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
+			left:caretPosition.left
 		};
 	},
 
   getNodeInfoWhereCaretIs: function(context){
     var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x;
     var caretColumn = caretPosition[1];
-    var $cursorDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the cursor is in
+    var $caretDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the caret is in
 
     //$textNodes than holds all text nodes that are found inside the div (in the same order as in the document hopefully!)
-    var $textNodes = $cursorDiv.find("*").contents().filter(function() {
+    var $textNodes = $caretDiv.find("*").contents().filter(function() {
       return this.nodeType === 3;
     });
 
-    //now we want to find the text node the cursor is in.
+    //now we want to find the text node the caret is in.
     var counter = 0; //holds the added length of text of all text nodes parsed so far. Non parsed yet, so it's 0.
-    var $childNode = null; //the subnode our cursor is in.
+    var $childNode = null; //the subnode our caret is in.
 
-    //find the child node the cursor is in
+    //find the child node the caret is in
     $textNodes.each(function(index,element){
       counter = counter + element.textContent.length; //add up to the length of text nodes parsed.
       //…current subnode. It can be put in the if clause as well, *but* if none is found that we would need to failsave this somewhere else
       $childNode = $(element.parentNode);
 
-      //if the added text length of all text parsed is now  grater than the cursors position.
+      //if the added text length of all text parsed is now  grater than the carets position.
       //using some plugins with neseted structures, it may be a bit off (to correct, substracting from selEnd[1] would be needed.
       if(counter >= caretColumn){
         return false; //stop .each by returning false
@@ -482,11 +492,11 @@ var autocomp = {
     });
 
     if ($childNode === null) {
-      // There was no text node inside $cursorDiv, so caret is on an empty line.
+      // There was no text node inside $caretDiv, so caret is on an empty line.
       // Empty lines on Etherpad always have a <br>, so we get its parent.
       // We cannot use br itself because if we insert a span inside the br we
       // get weird positions on screen
-      $childNode = $cursorDiv.find("br").parent();
+      $childNode = $caretDiv.find("br").parent();
     }
 
     return {

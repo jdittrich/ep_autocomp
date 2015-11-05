@@ -1,16 +1,28 @@
 var writeWordsWithC = function(cb){
-
   var inner$ = helper.padInner$;
   var $firstTextElement = inner$("div").first();
   //select this text element
   $firstTextElement.sendkeys('{selectall}{del}');
-  $firstTextElement.html('car<br/>chrome<br/>couch<br/><br/>');
+  $firstTextElement.html('car<br/>chrome<br/>couch<br/>&nbsp;<br/>');
   helper.waitFor(function(){
     var $firstTextElement =  inner$("div").first();
     return $firstTextElement.text() === "car";
   }).done(cb);
 }
 
+// force pad content to be empty, so tests won't fail if Etherpad default text
+// has content on settings.json
+var clearPad = function(cb) {
+  var inner$ = helper.padInner$;
+  var $padContent = inner$("#innerdocbody");
+  $padContent.html("");
+
+  // wait for Etherpad to re-create first line
+  helper.waitFor(function(){
+    var lineNumber = inner$("div").length;
+    return lineNumber === 1;
+  }).done(cb);
+}
 
 var enableAutocomplete = function(callback) {
   var chrome$ = helper.padChrome$;
@@ -28,7 +40,6 @@ var enableAutocomplete = function(callback) {
 
   callback();
 }
-
 
 var resetFlagsAndEnableAutocomplete = function(callback) {
   resetFlags();
