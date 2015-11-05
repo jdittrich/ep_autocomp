@@ -56,4 +56,52 @@ ep_autocomp_test_helper.utils = {
     autocomp.showOnEmptyWords = false;
     return;
   },
+
+  pressEnter: function(){
+    var inner$ = helper.padInner$;
+    if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
+      var evtType = "keypress";
+    }else{
+      var evtType = "keydown";
+    }
+    var e = inner$.Event(evtType);
+    e.keyCode = 13; // enter :|
+    inner$("#innerdocbody").trigger(e);
+  },
+
+  pressListButton: function(){
+    var chrome$ = helper.padChrome$;
+    var $insertunorderedlistButton = chrome$(".buttonicon-insertunorderedlist");
+    $insertunorderedlistButton.click();
+  },
+
+  addAttributeToLine: function(lineNum, cb){
+    var inner$ = helper.padInner$;
+    var $targetLine = this.getLine(lineNum);
+    $targetLine.sendkeys('{mark}');
+    this.pressListButton();
+    helper.waitFor(function(){
+      var $targetLine = ep_autocomp_test_helper.utils.getLine(lineNum);
+      return $targetLine.find("ul li").length === 1;
+    }).done(cb);
+  },
+
+  // first line === getLine(0);
+  // second line === getLine(1);
+  // ...
+  getLine: function(lineNum){
+    var inner$ = helper.padInner$;
+    var line = inner$("div").first();
+    for (var i = lineNum - 1; i >= 0; i--) {
+      line = line.next();
+    }
+    return line;
+  },
+
+  textsOf: function($target){
+    var texts = _.map($target, function(el){
+      return $(el).text();
+    })
+    return texts;
+  }
 };
