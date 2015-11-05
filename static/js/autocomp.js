@@ -244,26 +244,39 @@ var autocomp = {
   },
   selectSuggestion:function(context){
     var suggestionFound = false;
-    var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
-    //the element the caret is in
+
+    var $selectedSuggestion = $list.children(".selected").eq(0);
+    // get the data out of the currently selected element
+    var textToInsert = $selectedSuggestion.data("complementary");
+    // get the original suggestion
+    var suggestionText = $selectedSuggestion.text();
+
+    // the element the caret is in
     var currentElement = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
+
     if(textToInsert !== undefined){
       // register listener to be able to call all callbacks when sendkeys is done
       $(currentElement).on("sendkeys", function() {
         // unregister listener to avoid duplicate calls in the future
         $(currentElement).off("sendkeys");
+
+        // fix replaced text if necessary (see more details on fixReplacedText())
+        autocomp.fixReplacedText(currentElement, suggestionText);
+
         autocomp.callPostSuggestionSelectedCallbacks();
       });
+
       // Empty lines always have a <br>, so due to problems with inserting text
       // with sendkeys, in this case, we need to insert the html directly
       var emptyLine = $(currentElement).find("br");
-      var isEmpty = emptyLine.length;
-      if (isEmpty){
+      var lineIsEmpty = emptyLine.length;
+      if (lineIsEmpty){
         emptyLine.replaceWith("<span>" + textToInsert + "</span>");
         this.adjustCaretPosition(currentElement, textToInsert);
       }else{
         $(currentElement).sendkeys(textToInsert);
       }
+
       $autocomp.hide();
       autocomp.tempDisabledHelper();
       suggestionFound = true;
@@ -277,6 +290,41 @@ var autocomp = {
     };
     $(currentElement).sendkeys(rightarrows);
   },
+
+  // Check if replaced text needs some adjustments. This is necessary when Latin chars
+  // are ignored and user typed word prefix without Latin chars, but selected suggestion
+  // had them.
+  // Ex: user typed "ar" and suggestion was "árvore"
+  // If we don't fix the resulting text, it will be "arvore", which is wrong
+  fixReplacedText: function(currentElement, selectedSuggestion) {
+    if (this.ignoreLatinCharacters) {
+      var commands = "";
+
+      // move caret to beginning of replaced text (on the example: "a|rvore")
+      for (var i = 1; i < selectedSuggestion.length; i++) { // "i = 1": if it is 0 caret is moved to "|arvore"
+        commands += "{leftarrow}";
+      };
+
+      // iterate over each of the chars on the resulting text
+      for (var i = 0; i < selectedSuggestion.length; i++) {
+        var charToReplace = selectedSuggestion.charAt(i);
+
+        // we need to first add correct char and only then remove the old one
+        // to avoid loosing text formatting when replacing the chars
+
+        // insert the correct char (on the example: "aá|rvore")
+        commands += charToReplace;
+        // remove the previous char (on the example: "|árvore")
+        commands += "{leftarrow}{backspace}";
+        // place caret on the correct position, that is, after next char (on the example: "ár|vore")
+        commands += "{rightarrow}{rightarrow}";
+      };
+
+      // finally, execute all commands:
+      $(currentElement).sendkeys(commands);
+    }
+  },
+
   closeSuggestionBox:function(){
     autocomp.tempDisabledHelper();
     $autocomp.hide();

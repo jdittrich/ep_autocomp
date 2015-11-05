@@ -184,6 +184,56 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
       done();
     });
   });
+
+  context("when user did not type the beginning of suggestion using Latin chars", function() {
+    beforeEach(function(cb) {
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
+
+      // 1st line: words beginning with Latin characters
+      // 2nd line: line like "ar<b>v muito</b> bonita"
+      // (we need text with mixed formatting to be able to validate that text formatting was not broken)
+      var $firstLine = inner$("div").first();
+      $firstLine.html("árvore<br/>ar<b>v muito</b> bonita");
+
+      // wait for Etherpad to finish splitting the lines
+      helper.waitFor(function(){
+        var $firstLine = inner$("div").first();
+        return $firstLine.text() === "árvore";
+      }).done(function(){
+        // place caret on "arvo| muito (...)"
+        var $lastLine = inner$("div").last();
+        $lastLine.sendkeys("{rightarrow}{rightarrow}{rightarrow}o");
+
+        // wait for suggestions to be available
+        helper.waitFor(function(){
+          return outer$('div#autocomp').is(":visible");
+        }).done(cb);
+      });
+    });
+
+    it("replaces the entire word respecting text formatting", function(done){
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
+
+      // select first suggestion ("árvore")
+      ep_autocomp_test_helper.utils.pressEnter();
+
+      // check if suggestion replaced text with Latin chars
+      helper.waitFor(function(){
+        var $lastLine = inner$("div").last();
+        return $lastLine.text() === "árvore muito bonita";
+      }).done(function() {
+        // check if text formatting was respected
+        // last line should be "ár<b>vore muito</b> bonita"
+        var $lastLine = inner$("div").last();
+        var textInBold = $lastLine.find("b").text();
+        expect(textInBold).to.be("vore muito");
+
+        done();
+      });
+    });
+  });
 });
 
 /* ********** Helper functions ********** */
