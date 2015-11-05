@@ -69,7 +69,7 @@ var autocomp = {
 		},100);
 	},
 
-	createAutocompHTML: function(filteredSuggestions, caretPosition, context){
+	createAutocompHTML: function(filteredSuggestions, caretPosition, partialWord, context){
 	/*
 	creates the dom element for the menu.
 
@@ -104,6 +104,8 @@ var autocomp = {
           "text": suggestion.fullText
         }).data(
           "complementary", suggestion.complementaryString //give the complementary string along.
+        ).data(
+          "partialWord", partialWord
         );
 
         // add listener to select suggestion on click
@@ -244,26 +246,41 @@ var autocomp = {
   },
   selectSuggestion:function(context){
     var suggestionFound = false;
-    var textToInsert = $list.children(".selected").eq(0).data("complementary"); //get the data out of the currently selected element
-    //the element the caret is in
+
+    var $selectedSuggestion = $list.children(".selected").eq(0);
+    // get the data out of the currently selected element
+    var textToInsert = $selectedSuggestion.data("complementary");
+    // get the text typed by used before suggestion was selected
+    var textAlreadyInserted = $selectedSuggestion.data("partialWord");
+    // get the original suggestion
+    var suggestionText = $selectedSuggestion.text();
+
+    // the element the caret is in
     var currentElement = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
+
     if(textToInsert !== undefined){
       // register listener to be able to call all callbacks when sendkeys is done
       $(currentElement).on("sendkeys", function() {
         // unregister listener to avoid duplicate calls in the future
         $(currentElement).off("sendkeys");
+
+        // fix replaced text if necessary (see more details on fixReplacedText())
+        autocomp.fixReplacedText(currentElement, suggestionText, textToInsert, textAlreadyInserted);
+
         autocomp.callPostSuggestionSelectedCallbacks();
       });
+
       // Empty lines always have a <br>, so due to problems with inserting text
       // with sendkeys, in this case, we need to insert the html directly
       var emptyLine = $(currentElement).find("br");
-      var isEmpty = emptyLine.length;
-      if (isEmpty){
+      var lineIsEmpty = emptyLine.length;
+      if (lineIsEmpty){
         emptyLine.replaceWith("<span>" + textToInsert + "</span>");
         this.adjustCaretPosition(currentElement, textToInsert);
       }else{
         $(currentElement).sendkeys(textToInsert);
       }
+
       $autocomp.hide();
       autocomp.tempDisabledHelper();
       suggestionFound = true;
@@ -277,6 +294,58 @@ var autocomp = {
     };
     $(currentElement).sendkeys(rightarrows);
   },
+
+  // Check if replaced text needs some adjustments. This is necessary when Latin chars
+  // are ignored and user typed word prefix without Latin chars, but selected suggestion
+  // had them.
+  // Ex: user typed "arv" and suggestion was "árvore"
+  // If we don't fix the resulting text, it will be "arvore", which is wrong
+  fixReplacedText: function(currentElement, selectedSuggestion, textInsertedByPlugin, textInsertedByUser) {
+    // only need to fix text if actual text is different from selected suggestion
+    var needToFixText = (selectedSuggestion !== (textInsertedByUser + textInsertedByPlugin));
+
+    if (this.ignoreLatinCharacters && needToFixText) {
+      var commands = "";
+
+      // move caret to beginning of replaced text (on the example: "a|rvore")
+      var fullLength = textInsertedByUser.length + textInsertedByPlugin.length;
+      for (var i = 1; i < fullLength; i++) { // "i = 1": if it is 0 caret is moved to "|arvore"
+        commands += "{leftarrow}";
+      };
+
+      // iterate over each of the chars on the resulting text that was inserted by user
+      for (var i = 0; i < textInsertedByUser.length; i++) {
+        var expectedChar = selectedSuggestion.charAt(i);
+        var actualChar = textInsertedByUser.charAt(i);
+
+        // we only replace char if it is not what was expected
+        if (expectedChar !== actualChar) {
+          // we need to first add correct char and only then remove the old one
+          // to avoid loosing text formatting when replacing the chars
+
+          // insert the correct char (on the example: "aá|rvore")
+          commands += expectedChar;
+          // remove the previous char (on the example: "|árvore")
+          commands += "{leftarrow}{backspace}";
+          // place caret on the correct position, that is, after expected char (on the example: "á|rvore")
+          commands += "{rightarrow}";
+        }
+
+        // move caret to next char (on the example: "ár|vore")
+        commands += "{rightarrow}";
+      };
+
+      // at this point caret is in the end of text previously inserted by user (on the example: "árv|ore").
+      // We need to make sure caret moved to its original position (on the example: "árvore|")
+      for (var i = 1; i < textInsertedByPlugin.length; i++) { // "i = 1": if it is 0 caret is moved to "árvore |"
+        commands += "{rightarrow}";
+      };
+
+      // finally, execute all commands:
+      $(currentElement).sendkeys(commands);
+    }
+  },
+
   closeSuggestionBox:function(){
     autocomp.tempDisabledHelper();
     $autocomp.hide();
@@ -311,7 +380,7 @@ var autocomp = {
 		}
 
 		var caretPosition = autocomp.caretPosition(context);
-		autocomp.createAutocompHTML(filteredSuggestions, caretPosition, context);
+		autocomp.createAutocompHTML(filteredSuggestions, caretPosition, partialWord, context);
 	},
 	filterSuggestionList:function(partialWord,possibleSuggestions){
 		/*
