@@ -2,9 +2,9 @@ describe("ep_autocomp - commands auto complete", function(){
   //create a new pad before each test run
   beforeEach(function(cb){
     helper.newPad(function(){
-      clearPad(function() {
-        resetFlagsAndEnableAutocomplete(function(){
-          writeWordsWithC(cb);
+      ep_autocomp_test_helper.utils.clearPad(function() {
+        ep_autocomp_test_helper.utils.resetFlagsAndEnableAutocomplete(function(){
+          ep_autocomp_test_helper.utils.writeWordsWithC(cb);
         });
       });
     });
@@ -67,7 +67,7 @@ describe("ep_autocomp - commands auto complete", function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function() {
       var $lastLine = inner$('div').last();
-      var context = navigationHelper.mockContext($lastLine);
+      var context = ep_autocomp_test_helper.navigationHelper.mockContext($lastLine);
 
       // force autocomplete to select first option
       var autocomp = helper.padChrome$.window.autocomp;
@@ -105,8 +105,8 @@ describe("ep_autocomp - commands auto complete", function(){
   })
 })
 
-var navigationHelper = {
-
+var ep_autocomp_test_helper = ep_autocomp_test_helper || {};
+ep_autocomp_test_helper.navigationHelper = {
   mockContext: function($currentElement){
     var context = {
       rep: {

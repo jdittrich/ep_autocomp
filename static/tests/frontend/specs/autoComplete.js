@@ -2,9 +2,9 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   beforeEach(function(cb){
     helper.newPad(function(){
-      clearPad(function() {
-        resetFlagsAndEnableAutocomplete(function(){
-          writeWordsWithC(cb);
+      ep_autocomp_test_helper.utils.clearPad(function() {
+        ep_autocomp_test_helper.utils.resetFlagsAndEnableAutocomplete(function(){
+          ep_autocomp_test_helper.utils.writeWordsWithC(cb);
         });
       });
     });
@@ -51,15 +51,15 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
   it("applies selected suggestion when user presses ENTER", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
-    var $lastLine = autocompleteHelper.getLine(3);
+    var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      autocompleteHelper.pressEnter();
+      ep_autocomp_test_helper.autocompleteHelper.pressEnter();
       helper.waitFor(function(){
-        var $lastLine = autocompleteHelper.getLine(3);
+        var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
         return $lastLine.text() === "car";
       }).done(done);
     });
@@ -70,7 +70,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     var inner$ = helper.padInner$;
 
     // type something to show suggestions
-    var $lastLine = autocompleteHelper.getLine(3);
+    var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
 
@@ -84,7 +84,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
       // check if last suggestion was inserted
       helper.waitFor(function(){
-        var $lastLine = autocompleteHelper.getLine(3);
+        var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
         return $lastLine.text() === "couch";
       }).done(done);
     });
@@ -114,7 +114,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
         // select a suggestion to trigger callback
-        autocompleteHelper.pressEnter();
+        ep_autocomp_test_helper.autocompleteHelper.pressEnter();
 
         helper.waitFor(function(){
           return callbackCalled;
@@ -126,7 +126,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
   context("when there are line attributes applied", function(){
     beforeEach(function(cb) {
       // make line where "car" is a line with line attributes
-      autocompleteHelper.addAttributeToLine(0, cb);
+      ep_autocomp_test_helper.autocompleteHelper.addAttributeToLine(0, cb);
     });
 
     it("ignores * in the beginning of line", function(done){
@@ -134,19 +134,19 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       var inner$ = helper.padInner$;
 
       // type something to display suggestions
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
         // select first suggestion (should be "car")
-        autocompleteHelper.pressEnter();
+        ep_autocomp_test_helper.autocompleteHelper.pressEnter();
 
         // test if "car" was selected -- if it was not, it means the suggestion
         // was "*car", so "*" was not ignored
         helper.waitFor(function(){
-          var $lastLine = autocompleteHelper.getLine(3);
+          var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
           return $lastLine.text() === "car";
         }).done(done);
       });
@@ -189,18 +189,18 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       var inner$ = helper.padInner$;
 
       // type something to display suggestions
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
         //trigger key event (that should be ignored)
-        autocompleteHelper.pressEnter();
+        ep_autocomp_test_helper.autocompleteHelper.pressEnter();
 
         //verify key event was ignored
         setTimeout(function(){
-          var $lastLine = autocompleteHelper.getLine(3);
+          var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
           expect($lastLine.text()).to.be("c");
           done();
         }, 500);
@@ -210,10 +210,10 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   context("when current line has line attribute", function(){
     beforeEach(function(cb) {
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys("c");
-      autocompleteHelper.addAttributeToLine(3, cb);
+      ep_autocomp_test_helper.autocompleteHelper.addAttributeToLine(3, cb);
     });
 
     context("and there is no content after caret", function(){
@@ -229,7 +229,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
-          var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+          var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
           expect(suggestions).to.contain("car");
           done();
         });
@@ -253,7 +253,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         helper.waitFor(function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
-          var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+          var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
           expect(suggestions).to.contain("car");
           done();
         });
@@ -284,9 +284,9 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
     it("applies suggestion word", function(done){
       //change the first line to a list
-      autocompleteHelper.addAttributeToLine(0, function(){
+      ep_autocomp_test_helper.autocompleteHelper.addAttributeToLine(0, function(){
         var outer$ = helper.padOuter$;
-        var $lastLine =  autocompleteHelper.getLine(0);
+        var $lastLine =  ep_autocomp_test_helper.autocompleteHelper.getLine(0);
         // let the line empty
         $lastLine.sendkeys('{selectall}{backspace}');
 
@@ -294,9 +294,9 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
           return outer$('div#autocomp').is(":visible");
         }).done(function(){
           // select first option "chrome"
-          autocompleteHelper.pressEnter();
+          ep_autocomp_test_helper.autocompleteHelper.pressEnter();
           helper.waitFor(function(){
-            var $firstLine =  autocompleteHelper.getLine(0);
+            var $firstLine =  ep_autocomp_test_helper.autocompleteHelper.getLine(0);
             var $firstItem = $firstLine.find("ul li").text();
             return $firstItem === "chrome";
           }).done(done);
@@ -317,14 +317,14 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       var outer$ = helper.padOuter$;
 
       //write CAR in the last line, duplicated word uppercase
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('CAR CA');
 
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("CAR");
         expect(suggestions).to.contain("car");
         done();
@@ -349,7 +349,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
       // write words with Latin characters, so they will be available on suggestions later
       // (all start with "d" so we can use this prefix to choose which suggestions to show)
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('dá dà dä dã dâ dÁ dÀ dÄ dÃ dÂ ');
 
       // type first letters, so all words written above should be displayed
@@ -358,7 +358,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("dá");
         expect(suggestions).to.contain("dà");
         expect(suggestions).to.contain("dä");
@@ -378,7 +378,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
       // write words with Latin characters, so they will be available on suggestions later
       // (all start with "d" so we can use this prefix to choose which suggestions to show)
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('dé dè dë dê dÉ dÈ dË dÊ ');
 
       // type first letters, so all words written above should be displayed
@@ -387,7 +387,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("dé");
         expect(suggestions).to.contain("dè");
         expect(suggestions).to.contain("dë");
@@ -405,7 +405,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
       // write words with Latin characters, so they will be available on suggestions later
       // (all start with "d" so we can use this prefix to choose which suggestions to show)
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('dí dì dï dî dÍ dÌ dÏ dÎ ');
 
       // type first letters, so all words written above should be displayed
@@ -414,7 +414,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("dí");
         expect(suggestions).to.contain("dì");
         expect(suggestions).to.contain("dï");
@@ -432,7 +432,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
       // write words with Latin characters, so they will be available on suggestions later
       // (all start with "d" so we can use this prefix to choose which suggestions to show)
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('dó dò dö dõ dô dÓ dÒ dÖ dÕ dÔ ');
 
       // type first letters, so all words written above should be displayed
@@ -441,7 +441,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("dó");
         expect(suggestions).to.contain("dò");
         expect(suggestions).to.contain("dö");
@@ -461,7 +461,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
       // write words with Latin characters, so they will be available on suggestions later
       // (all start with "d" so we can use this prefix to choose which suggestions to show)
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('dú dù dü dû dÚ dÙ dÜ dÛ ');
 
       // type first letters, so all words written above should be displayed
@@ -470,7 +470,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("dú");
         expect(suggestions).to.contain("dù");
         expect(suggestions).to.contain("dü");
@@ -488,7 +488,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
       // write words with Latin characters, so they will be available on suggestions later
       // (all start with "d" so we can use this prefix to choose which suggestions to show)
-      var $lastLine = autocompleteHelper.getLine(3);
+      var $lastLine = ep_autocomp_test_helper.autocompleteHelper.getLine(3);
       $lastLine.sendkeys('dç dÇ ');
 
       // type first letters, so all words written above should be displayed
@@ -497,7 +497,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        var suggestions = autocompleteHelper.textsOf(outer$('div#autocomp li'));
+        var suggestions = ep_autocomp_test_helper.autocompleteHelper.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("dç");
         expect(suggestions).to.contain("dÇ");
         done();
@@ -509,7 +509,8 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 });
 
 /* ********** Helper functions ********** */
-var autocompleteHelper = {
+var ep_autocomp_test_helper = ep_autocomp_test_helper || {};
+ep_autocomp_test_helper.autocompleteHelper = {
 
   pressEnter: function(){
     var inner$ = helper.padInner$;
@@ -535,7 +536,7 @@ var autocompleteHelper = {
     $targetLine.sendkeys('{mark}');
     this.pressListButton();
     helper.waitFor(function(){
-      var $targetLine = autocompleteHelper.getLine(lineNum);
+      var $targetLine = ep_autocomp_test_helper.autocompleteHelper.getLine(lineNum);
       return $targetLine.find("ul li").length === 1;
     }).done(cb);
   },
