@@ -90,65 +90,86 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     });
   });
 
-  it("calls the callback when user selects a suggestion", function(done){
-    var outer$ = helper.padOuter$;
-    var inner$ = helper.padInner$;
-    var $lastLine =  inner$("div").last();
-    $lastLine.sendkeys('{selectall}');
-    $lastLine.sendkeys('c');
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function(){
+  context("when there is a callback registered for suggestion selection", function() {
+    var callbackCalled = false;
+
+    beforeEach(function() {
       // define a callback to be provided to autocomp
-      var callbackCalled = false;
       var callback = function() {
         callbackCalled = true;
       };
       var autocomp = helper.padChrome$.window.autocomp;
       autocomp.addPostSuggestionSelectedCallback(callback);
-
-      // select a suggestion to trigger callback
-      autocompleteHelper.pressEnter();
-
-      helper.waitFor(function(){
-        return callbackCalled;
-      }).done(done);
-    });
-  });
-
-  context("when there is line attributes applied", function(){
-
-    it("ignores * in the beginning of line", function(done){
-      autocompleteHelper.addAttributeToLine(0, function(){
-        var outer$ = helper.padOuter$;
-        var inner$ = helper.padInner$;
-        var $lastLine = autocompleteHelper.getLine(3);
-        $lastLine.sendkeys('{selectall}');
-        $lastLine.sendkeys('c');
-        helper.waitFor(function(){
-          return outer$('div#autocomp').is(":visible");
-        }).done(function(){
-          autocompleteHelper.pressEnter();
-          helper.waitFor(function(){
-            var $lastLine = autocompleteHelper.getLine(3);
-            return $lastLine.text() === "car";
-          }).done(done);
-        });
-      });
     });
 
-  });
-
-  context("when edit event processing is disabled", function(){
-    it("does not show suggestions", function(done){
+    it("calls the callback when user selects a suggestion", function(done){
       var outer$ = helper.padOuter$;
-      var autocomp = helper.padChrome$.window.autocomp;
-      autocomp.processEditEvent = false;
       var inner$ = helper.padInner$;
+
+      // type something to display suggestions
       var $lastLine =  inner$("div").last();
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
-      //we have to give enough time to suggestions box be shown
+      helper.waitFor(function(){
+        return outer$('div#autocomp').is(":visible");
+      }).done(function(){
+        // select a suggestion to trigger callback
+        autocompleteHelper.pressEnter();
+
+        helper.waitFor(function(){
+          return callbackCalled;
+        }).done(done);
+      });
+    });
+  });
+
+  context("when there are line attributes applied", function(){
+    beforeEach(function(cb) {
+      // make line where "car" is a line with line attributes
+      autocompleteHelper.addAttributeToLine(0, cb);
+    });
+
+    it("ignores * in the beginning of line", function(done){
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
+
+      // type something to display suggestions
+      var $lastLine = autocompleteHelper.getLine(3);
+      $lastLine.sendkeys('{selectall}');
+      $lastLine.sendkeys('c');
+      helper.waitFor(function(){
+        return outer$('div#autocomp').is(":visible");
+      }).done(function(){
+        // select first suggestion (should be "car")
+        autocompleteHelper.pressEnter();
+
+        // test if "car" was selected -- if it was not, it means the suggestion
+        // was "*car", so "*" was not ignored
+        helper.waitFor(function(){
+          var $lastLine = autocompleteHelper.getLine(3);
+          return $lastLine.text() === "car";
+        }).done(done);
+      });
+    });
+  });
+
+  context("when edit event processing is disabled", function(){
+    beforeEach(function() {
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.processEditEvent = false;
+    });
+
+    it("does not show suggestions", function(done){
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
+
+      // type something to display suggestions -- it should not display anyway,
+      // as edit event processing is disabled
+      var $lastLine =  inner$("div").last();
+      $lastLine.sendkeys('{selectall}');
+      $lastLine.sendkeys('c');
+
+      // we have to give enough time to suggestions box be shown
       setTimeout(function() {
         expect(outer$('div#autocomp').is(":visible")).to.be(false);
         done();
@@ -157,22 +178,24 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
   });
 
   context("when key event processing is disabled", function(){
+    beforeEach(function() {
+      //press enter event should not be handled
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.processKeyEvent = false;
+    });
+
     it("does not show suggestions", function(done){
       var outer$ = helper.padOuter$;
       var inner$ = helper.padInner$;
 
-      //press enter event should not be handled
-      var autocomp = helper.padChrome$.window.autocomp;
-      autocomp.processKeyEvent = false;
-
-      //show suggestions box
+      // type something to display suggestions
       var $lastLine = autocompleteHelper.getLine(3);
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
       helper.waitFor(function(){
         return outer$('div#autocomp').is(":visible");
       }).done(function(){
-        //trigger event (that should be ignored)
+        //trigger key event (that should be ignored)
         autocompleteHelper.pressEnter();
 
         //verify key event was ignored
