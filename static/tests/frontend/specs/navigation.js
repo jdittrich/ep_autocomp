@@ -2,8 +2,10 @@ describe("ep_autocomp - commands auto complete", function(){
   //create a new pad before each test run
   beforeEach(function(cb){
     helper.newPad(function(){
-      resetFlagsAndEnableAutocomplete(function(){
-        writeWordsWithC(cb);
+      clearPad(function() {
+        resetFlagsAndEnableAutocomplete(function(){
+          writeWordsWithC(cb);
+        });
       });
     });
     this.timeout(60000);
@@ -15,6 +17,7 @@ describe("ep_autocomp - commands auto complete", function(){
 
     // opens suggestions box
     var $lastLine =  inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
@@ -35,6 +38,7 @@ describe("ep_autocomp - commands auto complete", function(){
 
     // opens suggestions box
     var $lastLine =  inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
@@ -57,6 +61,7 @@ describe("ep_autocomp - commands auto complete", function(){
     var inner$ = helper.padInner$;
     // opens suggestions box
     var $lastLine = inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
@@ -80,6 +85,7 @@ describe("ep_autocomp - commands auto complete", function(){
     var inner$ = helper.padInner$;
     // opens suggestions box
     var $lastLine = inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");

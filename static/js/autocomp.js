@@ -41,14 +41,11 @@ var autocomp = {
   resetPostSuggestionSelectedCallbacks: function() {
     this.postSuggestionSelectedCallbacks = [];
   },
-  callPostSuggestionSelectedCallbacks: function(done) {
+  callPostSuggestionSelectedCallbacks: function() {
     _.each(this.postSuggestionSelectedCallbacks, function(callback) {
       callback();
     });
-
-    done();
   },
-
 
 	config:{
 		//move this ot external JSON. Save Regexes as Strings, parse them when needed.
@@ -253,10 +250,9 @@ var autocomp = {
     if(textToInsert !== undefined){
       // register listener to be able to call all callbacks when sendkeys is done
       $(currentElement).on("sendkeys", function() {
-        autocomp.callPostSuggestionSelectedCallbacks(function() {
-          // unregister listener to avoid duplicate calls in the future
-          $(currentElement).off("sendkeys");
-        });
+        // unregister listener to avoid duplicate calls in the future
+        $(currentElement).off("sendkeys");
+        autocomp.callPostSuggestionSelectedCallbacks();
       });
       // Empty lines always have a <br>, so due to problems with inserting text
       // with sendkeys, in this case, we need to insert the html directly
