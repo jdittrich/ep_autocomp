@@ -301,7 +301,10 @@ var autocomp = {
   // Ex: user typed "arv" and suggestion was "árvore"
   // If we don't fix the resulting text, it will be "arvore", which is wrong
   fixReplacedText: function(currentElement, selectedSuggestion, textInsertedByPlugin, textInsertedByUser) {
-    if (this.ignoreLatinCharacters) {
+    // only need to fix text if actual text is different from selected suggestion
+    var needToFixText = (selectedSuggestion !== (textInsertedByUser + textInsertedByPlugin));
+
+    if (this.ignoreLatinCharacters && needToFixText) {
       var commands = "";
 
       // move caret to beginning of replaced text (on the example: "a|rvore")
