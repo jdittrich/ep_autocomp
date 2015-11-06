@@ -20,7 +20,7 @@ describe("ep_autocomp - plugin customization", function(){
         callbackCalled = true;
       };
       var autocomp = helper.padChrome$.window.autocomp;
-      autocomp.addPostSuggestionSelectedCallback(callback);
+      autocomp.addPostSuggestionSelectedCallback("ep_autocomp", callback);
     });
 
     it("calls the callback when user selects a suggestion", function(done){
