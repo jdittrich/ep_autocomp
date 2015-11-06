@@ -34,15 +34,15 @@ var autocomp = {
   ignoreLatinCharacters: false,
 
   // collection of callbacks to be called after user selects a suggestion from the list
-  postSuggestionSelectedCallbacks: [],
-  addPostSuggestionSelectedCallback: function(callback) {
-    this.postSuggestionSelectedCallbacks.push(callback);
+  postSuggestionSelectedCallbacks: {},
+  addPostSuggestionSelectedCallback: function(id, callback) {
+    this.postSuggestionSelectedCallbacks[id] = callback;
   },
-  resetPostSuggestionSelectedCallbacks: function() {
-    this.postSuggestionSelectedCallbacks = [];
+  resetPostSuggestionSelectedCallbacks: function(id) {
+    delete this.postSuggestionSelectedCallbacks[id];
   },
   callPostSuggestionSelectedCallbacks: function() {
-    _.each(this.postSuggestionSelectedCallbacks, function(callback) {
+    _.each(this.postSuggestionSelectedCallbacks, function(callback, id) {
       callback();
     });
   },
