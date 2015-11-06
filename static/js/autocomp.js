@@ -424,20 +424,20 @@ var autocomp = {
     var transformedPossibleSuggestion = possibleSuggestion;
     var transformedPartialWord        = partialWord;
 
-    // check if it should ignore Latin characters
-    if (this.ignoreLatinCharacters) {
-      transformedPossibleSuggestion = this.replaceLatinCharacters(transformedPossibleSuggestion);
-      transformedPartialWord        = this.replaceLatinCharacters(transformedPartialWord);
-    }
-
     // check if it should be considered matches without matching case
     if (!this.caseSensitiveMatch) {
       transformedPossibleSuggestion = transformedPossibleSuggestion.toLowerCase();
       transformedPartialWord        = transformedPartialWord.toLowerCase();
     }
 
-    // compare words
+    // compare words without ignoring Latin chars
     var isSubText = (transformedPossibleSuggestion.indexOf(transformedPartialWord) === 0);
+
+    // if still doesn't match but should ignore Latin chars, try again ignoring them
+    if (!isSubText && this.ignoreLatinCharacters) {
+      transformedPossibleSuggestion = this.replaceLatinCharacters(transformedPossibleSuggestion);
+      isSubText = (transformedPossibleSuggestion.indexOf(transformedPartialWord) === 0);
+    }
 
     return isSubText;
   },

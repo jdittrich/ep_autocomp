@@ -186,32 +186,34 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
   });
 
   // don't need tests for other Latin chars because the code for all of them is the same
-  it("shows suggestions with 'á', 'à', 'ä', 'ã', 'â', 'Á', 'À', 'Ä', 'Ã', 'Â' when user types Latin equivalent of 'a'", function(done){
+  it("shows suggestions only with 'á' or 'Á' when user types 'á'", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
     // write words with Latin characters, so they will be available on suggestions later
     // (all start with "d" so we can use this prefix to choose which suggestions to show)
     var $firstLine = inner$("div").first();
-    $firstLine.sendkeys('dá dà dä dã dâ dÁ dÀ dÄ dÃ dÂ ');
+    $firstLine.sendkeys('dáo dào däo dão dâo dao dÁo dÀo dÄo dÃo dÂo dAo ');
 
-    // type first chars, so all words written above should be displayed
+    // type first chars, so some words written above should be displayed
     $firstLine.sendkeys('dá');
 
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
       var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
-      // expect(suggestions).to.contain("dá"); // should not contain suggestion already typed
-      expect(suggestions).to.contain("dà");
-      expect(suggestions).to.contain("dä");
-      expect(suggestions).to.contain("dã");
-      expect(suggestions).to.contain("dâ");
-      expect(suggestions).to.contain("dÁ");
-      expect(suggestions).to.contain("dÀ");
-      expect(suggestions).to.contain("dÄ");
-      expect(suggestions).to.contain("dÃ");
-      expect(suggestions).to.contain("dÂ");
+      expect(suggestions).to.contain("dáo");
+      expect(suggestions).to.not.contain("dào");
+      expect(suggestions).to.not.contain("däo");
+      expect(suggestions).to.not.contain("dão");
+      expect(suggestions).to.not.contain("dâo");
+      expect(suggestions).to.not.contain("dao");
+      expect(suggestions).to.contain("dÁo");
+      expect(suggestions).to.not.contain("dÀo");
+      expect(suggestions).to.not.contain("dÄo");
+      expect(suggestions).to.not.contain("dÃo");
+      expect(suggestions).to.not.contain("dÂo");
+      expect(suggestions).to.not.contain("dAo");
       done();
     });
   });
