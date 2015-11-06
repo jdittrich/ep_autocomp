@@ -427,6 +427,7 @@ var autocomp = {
     // check if it should ignore Latin characters
     if (this.ignoreLatinCharacters) {
       transformedPossibleSuggestion = this.replaceLatinCharacters(transformedPossibleSuggestion);
+      transformedPartialWord        = this.replaceLatinCharacters(transformedPartialWord);
     }
 
     // check if it should be considered matches without matching case
