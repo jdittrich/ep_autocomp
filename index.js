@@ -1,8 +1,8 @@
 /*TODO: Clean up here. Some is just Fear/Uncertainty/Doubt code  */
 
-var eejs	= require('ep_etherpad-lite/node/eejs'),
-//express		= require('ep_etherpad-lite/node_modules/express'), //todo: do I need express? 
-settings	= require('ep_etherpad-lite/node/utils/Settings');
+var eejs = require('ep_etherpad-lite/node/eejs'),
+//express = require('ep_etherpad-lite/node_modules/express'), //todo: do I need express?
+settings = require('ep_etherpad-lite/node/utils/Settings');
 
 /* TODO: Delete if no problems occur
 exports.eejsBlock_styles = function (hook_name, args, cb) {

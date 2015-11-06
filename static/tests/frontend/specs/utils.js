@@ -57,7 +57,7 @@ ep_autocomp_test_helper.utils = {
     return;
   },
 
-  pressEnter: function(){
+  pressShortcut: function(keyCode){
     var inner$ = helper.padInner$;
     if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
       var evtType = "keypress";
@@ -65,8 +65,16 @@ ep_autocomp_test_helper.utils = {
       var evtType = "keydown";
     }
     var e = inner$.Event(evtType);
-    e.keyCode = 13; // enter :|
+    e.keyCode = keyCode;
     inner$("#innerdocbody").trigger(e);
+  },
+
+  pressEnter: function(){
+    this.pressShortcut(13);
+  },
+
+  pressEsc: function(){
+    this.pressShortcut(27);
   },
 
   pressListButton: function(){

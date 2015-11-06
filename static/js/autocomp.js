@@ -16,9 +16,9 @@ var $autocomp, $list; //fails if they are not defined here, though they are crea
 //so it would be possible to augment the autocomp object from other hooks without polluting global space too much.
 
 var autocomp = {
-	//the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
-	//isEnabled: true,//this could be getter/Setter too
-	//isShown: false,
+  //the following shoould probably be: isActive(true) for enabling, isActive (false) for disabling, isActive() for getting the current state. (closure!)
+  //isEnabled: true,//this could be getter/Setter too
+  //isShown: false,
 
   // flags to allow other plugins to avoid this plugin to process ace events
   // processKeyEvent enables events like typing arrow, enter, etc
@@ -47,57 +47,57 @@ var autocomp = {
     });
   },
 
-	config:{
-		//move this ot external JSON. Save Regexes as Strings, parse them when needed.
-		hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
-		regexToFind:[/(\S+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
-		//EXAMPLE REGEXES:
-		// /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
-		// /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
-		//natural word matches:  /(\w+)+/g
-		//words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
-	},
-	tempDisabled:false, //Dirty Hack. See autocomp.tempDisabledHelper and autocomp.aceKeyEvent
-	tempDisabledHelper:function(){
-		//this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice,
-		//which causes unwanted actions. This function sets tempDisabled to true for a short time
-		//Thus preventing these double events.
-		//
-		autocomp.tempDisabled = true;
-		window.setTimeout(function(){
-			autocomp.tempDisabled=false;
-		},100);
-	},
+  config:{
+    //move this ot external JSON. Save Regexes as Strings, parse them when needed.
+    hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
+    regexToFind:[/(\S+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
+    //EXAMPLE REGEXES:
+    // /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
+    // /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
+    //natural word matches:  /(\w+)+/g
+    //words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
+  },
+  tempDisabled:false, //Dirty Hack. See autocomp.tempDisabledHelper and autocomp.aceKeyEvent
+  tempDisabledHelper:function(){
+    //this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice,
+    //which causes unwanted actions. This function sets tempDisabled to true for a short time
+    //Thus preventing these double events.
+    //
+    autocomp.tempDisabled = true;
+    window.setTimeout(function(){
+      autocomp.tempDisabled=false;
+    },100);
+  },
 
-	createAutocompHTML: function(filteredSuggestions, caretPosition, partialWord, context){
-	/*
-	creates the dom element for the menu.
+  createAutocompHTML: function(filteredSuggestions, caretPosition, partialWord, context){
+  /*
+  creates the dom element for the menu.
 
-	gets:
-	filteredSuggestions: an array containing objects like
-		{
-			fullText: string containing the full text, e.g. "nightingale"
-			complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
-		}
-	caretPosition: an getBoundingClientRect() with the properties top and left in pixel.
+  gets:
+  filteredSuggestions: an array containing objects like
+    {
+      fullText: string containing the full text, e.g. "nightingale"
+      complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
+    }
+  caretPosition: an getBoundingClientRect() with the properties top and left in pixel.
 
-	returns: ?
-	*/
-		if(!filteredSuggestions || !caretPosition){
-			console.log("insufficent attributes");
-			return;
+  returns: ?
+  */
+    if(!filteredSuggestions || !caretPosition){
+      console.log("insufficent attributes");
+      return;
     } //precaution
 
-		if(filteredSuggestions.length === 0){
-			$autocomp.hide();
-		}
+    if(filteredSuggestions.length === 0){
+      $autocomp.hide();
+    }
 
-		$list.empty();
+    $list.empty();
 
-		//CREATE DOM ELEMENTS
-		var listEntries = [];
-		$.each(filteredSuggestions, function(index, suggestion){
-			// create a dom element (li) for each suggestion
+    //CREATE DOM ELEMENTS
+    var listEntries = [];
+    $.each(filteredSuggestions, function(index, suggestion){
+      // create a dom element (li) for each suggestion
       var listEntry = $("<li/>",
         {
           "class": "ep_autocomp-listentry",
@@ -117,22 +117,22 @@ var autocomp = {
           // replace text with this suggestion
           autocomp.selectSuggestion(context);
         });
-			listEntries.push(listEntry);
-		}); //end each-function
+      listEntries.push(listEntry);
+    }); //end each-function
 
     // make first suggestion marked as selected
-		$(listEntries[0]).addClass("selected");
+    $(listEntries[0]).addClass("selected");
 
     // append all list entries holding the suggestions
-		$list.append(listEntries);
+    $list.append(listEntries);
 
     // show suggestions next to caret position
-		$autocomp
-			.show()
-			.css({top: caretPosition.top, left: caretPosition.left});
-	},
+    $autocomp
+      .show()
+      .css({top: caretPosition.top, left: caretPosition.left});
+  },
 
-	aceKeyEvent: function(type, context, cb){
+  aceKeyEvent: function(type, context, cb){
     // ACE event processing disable by other plugins
     if (!autocomp.processKeyEvent) return;
     //precaution
@@ -142,57 +142,56 @@ var autocomp = {
     //if disabled in settings
     if(!$('#options-autocomp').is(':checked')) return;
 
-		//if not menu not shown, don't prevent defaults
+    //if not menu not shown, don't prevent defaults
 
-		//if key is ↑ , choose next option, prevent default
-		//if key is ↓ , choose next option, prevent default
-		//if key is ENTER, read out the complementation, close autocomplete menu and input it at caret. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
-		if($autocomp.is(":visible")){
-			//ENTER PRESSED
-			if(this.enterPressed(context.evt)){
+    //if key is ↑ , choose next option, prevent default
+    //if key is ↓ , choose next option, prevent default
+    //if key is ENTER, read out the complementation, close autocomplete menu and input it at caret. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
+    if($autocomp.is(":visible")){
+      //ENTER PRESSED
+      if(this.enterPressed(context.evt)){
         var textReplaced = this.selectSuggestion(context);
         if (textReplaced) {
-					context.evt.preventDefault();
+          context.evt.preventDefault();
           // return value should be true if the event was handled.
           // So we return true which can be returned by the hook itself consequently.
-					return true;
-				}
-			}
+          return true;
+        }
+      }
 
-			//UP PRESSED
-			if(this.upPressed(context.evt)){
-				this.moveSelectionUp();
-				context.evt.preventDefault();
-				return true;
-			}
-			//DOWN PRESSED
-			if(this.downPressed(context.evt)){
+      //UP PRESSED
+      if(this.upPressed(context.evt)){
+        this.moveSelectionUp();
+        context.evt.preventDefault();
+        return true;
+      }
+      //DOWN PRESSED
+      if(this.downPressed(context.evt)){
         this.moveSelectionDown();
-				context.evt.preventDefault();
-				return true;
-			}
-			//ESCAPE TODO: This is not caught. Better we add a close button. For more info see context.evt.keyCode === 32 && context.evt.ctrlKey
-			/*
-			if(context.evt.keyCode === 27){
+        context.evt.preventDefault();
+        return true;
+      }
+      //ESCAPE PRESSED
+      if(this.escPressed(context.evt)){
         autocomp.tempDisabledHelper();
         context.evt.preventDefault();
         $autocomp.hide();
-				return true;
-			}*/
-		}
+        return true;
+      }
+    }
 
-		//SPACE AND CONTROL PRESSED
-		if(this.ctrlSpacePressed(context.evt)){
-			if($autocomp.is(":hidden")){
+    //SPACE AND CONTROL PRESSED
+    if(this.ctrlSpacePressed(context.evt)){
+      if($autocomp.is(":hidden")){
         autocomp.update(context);
         $autocomp.show();
         autocomp.tempDisabledHelper();
       }else{
         this.closeSuggestionBox();
       }
-			return true;
-		}
-	},
+      return true;
+    }
+  },
   enterPressed: function(evt) {
     return evt.keyCode === 13;
   },
@@ -203,6 +202,9 @@ var autocomp = {
   downPressed: function(evt) {
     // check for shift to avoid confusing "↓" with "(" (shift+9)
     return !evt.shiftKey && evt.keyCode === 40;
+  },
+  escPressed: function(evt) {
+    return evt.keyCode === 27;
   },
   ctrlSpacePressed: function(evt) {
     return evt.ctrlKey && evt.keyCode === 32;
@@ -350,56 +352,56 @@ var autocomp = {
     autocomp.tempDisabledHelper();
     $autocomp.hide();
   },
-	aceEditEvent:function(type, context, cb){
+  aceEditEvent:function(type, context, cb){
     if (!autocomp.processEditEvent) return;
-		if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
-		autocomp.update(context);
-	},
-	update:function(context, fixedSuggestions, customRegex){
+    if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
+    autocomp.update(context);
+  },
+  update:function(context, fixedSuggestions, customRegex){
 
-		if(context.rep.selStart === null) return;
+    if(context.rep.selStart === null) return;
     //as edit event is called when anyone edits, we must ensure it is the current user
-		if(!autocomp.isEditByMe(context)) return;
+    if(!autocomp.isEditByMe(context)) return;
 
     //get the word which is being typed
     var partialWord = this.getCurrentPartialWord(context, customRegex);
 
     //hide suggestions if no word is typed
     var wordIsEmpty = partialWord.length === 0;
-		if(!this.showOnEmptyWords && wordIsEmpty){
-			$autocomp.hide();
-			return;
-		}
+    if(!this.showOnEmptyWords && wordIsEmpty){
+      $autocomp.hide();
+      return;
+    }
 
-		suggestions = fixedSuggestions || autocomp.getPossibleSuggestions(context);
-		filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions);
+    suggestions = fixedSuggestions || autocomp.getPossibleSuggestions(context);
+    filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions);
 
-		if(filteredSuggestions.length===0){
-			$autocomp.hide();
-			return;
-		}
+    if(filteredSuggestions.length===0){
+      $autocomp.hide();
+      return;
+    }
 
-		var caretPosition = autocomp.caretPosition(context);
-		autocomp.createAutocompHTML(filteredSuggestions, caretPosition, partialWord, context);
-	},
-	filterSuggestionList:function(partialWord,possibleSuggestions){
-		/*
-		gets:
-		- the string for which we want matches ("partialWord")
-		- a list of all completions
+    var caretPosition = autocomp.caretPosition(context);
+    autocomp.createAutocompHTML(filteredSuggestions, caretPosition, partialWord, context);
+  },
+  filterSuggestionList:function(partialWord,possibleSuggestions){
+    /*
+    gets:
+    - the string for which we want matches ("partialWord")
+    - a list of all completions
 
-		returns: an array with objects containing suggestions as object with
-		{
-			fullText: string containing the full text, e.g. "nightingale"
-			complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
-		}
+    returns: an array with objects containing suggestions as object with
+    {
+      fullText: string containing the full text, e.g. "nightingale"
+      complementaryString: string with what is needed to complete the String to be matched e.g is the string to be matches is "nighti", than the complementary String here would be "ngale"
+    }
 
-		*/
+    */
 
-		//filter it
-		var filteredSuggestions=[];
-		_.each(possibleSuggestions,function(possibleSuggestion, key, list){
-			if(typeof possibleSuggestion !== "string") return; //precaution
+    //filter it
+    var filteredSuggestions=[];
+    _.each(possibleSuggestions,function(possibleSuggestion, key, list){
+      if(typeof possibleSuggestion !== "string") return; //precaution
 
       // accept suggestion if user didn't type anything and flag showOnEmptyWords is "on"
       var allowEmptyPartialWord   = (partialWord.length === 0 && autocomp.showOnEmptyWords);
@@ -408,17 +410,17 @@ var autocomp = {
       // avoid autocomplete "abc" with "abc"
       var notSameWordOfSuggestion = (possibleSuggestion !== partialWord);
 
-			if((allowEmptyPartialWord || isSubtextOfSuggestion) && notSameWordOfSuggestion){
-				var complementaryString = possibleSuggestion.slice(partialWord.length);
-				filteredSuggestions.push({
-  				"fullText":possibleSuggestion,
-  				"complementaryString":complementaryString
+      if((allowEmptyPartialWord || isSubtextOfSuggestion) && notSameWordOfSuggestion){
+        var complementaryString = possibleSuggestion.slice(partialWord.length);
+        filteredSuggestions.push({
+          "fullText":possibleSuggestion,
+          "complementaryString":complementaryString
         });
-			}
-		});
+      }
+    });
 
-		return filteredSuggestions;
-	},
+    return filteredSuggestions;
+  },
 
   subtextOfSuggestion: function(possibleSuggestion, partialWord){
     var transformedPossibleSuggestion = possibleSuggestion;
@@ -468,71 +470,71 @@ var autocomp = {
       replace(/[Ç]/g, "C");
   },
 
-	caretPosition:function(context){
-		/*
-		gets: context object from a ace editor event (e.g. aceEditEvent)
-		returns: x and y value for the position of the caret measured in pixel.
-		Should work in any other context too (if you need that functionality in another etherpad addon)
+  caretPosition:function(context){
+    /*
+    gets: context object from a ace editor event (e.g. aceEditEvent)
+    returns: x and y value for the position of the caret measured in pixel.
+    Should work in any other context too (if you need that functionality in another etherpad addon)
 
-		useful to know:
-		The structure inside the editor is usually:
-		div
-		|_ span
-		|_ span
-		|_ span
+    useful to know:
+    The structure inside the editor is usually:
+    div
+    |_ span
+    |_ span
+    |_ span
 
-		div
-		|- span
-		etc.: Many divs (equal paragraphs) with spans inside (equal formated sections) So there are few spans if few formating
+    div
+    |- span
+    etc.: Many divs (equal paragraphs) with spans inside (equal formated sections) So there are few spans if few formating
           took place, many spans if a lot of different bold, colored etc. text is there. But: the amount of nesting varies
           (one span may have a <b>, in which is a <i> etc. and instead of spans we may have code or the like as well.
 
-		In this function, we will determine the div the caret is in and clone that div and its style. Than, in the clone, we find
+    In this function, we will determine the div the caret is in and clone that div and its style. Than, in the clone, we find
     the corresponding subnode the caret is in, than the offset in the corresponding text node the caret is in.
-		Than we insert a span exactly there and get its position.
-		Than we clean up again, cause this is messy stuff.
-		*/
+    Than we insert a span exactly there and get its position.
+    Than we clean up again, cause this is messy stuff.
+    */
     var nodeInfo        = this.getNodeInfoWhereCaretIs(context);
     var counter         = nodeInfo.counter;
     var $childNode      = nodeInfo.node;
     var $cloneChildNode = this.cloneNodeWithStyle($childNode);
 
-		//
-		// In the following section we insert a DOM node where the caret is.
-		//
+    //
+    // In the following section we insert a DOM node where the caret is.
+    //
 
     //how many characters are between the start of the element and the caret?
-		var leftoverString = $cloneChildNode.text().length - (counter - context.rep.selEnd[1]);
+    var leftoverString = $cloneChildNode.text().length - (counter - context.rep.selEnd[1]);
     var targetNode = $cloneChildNode[0].childNodes[0]; // the subnode our caret is in.
-		var targetNodeText = targetNode.nodeValue || ""; //get the text of the subnode our caret is in.
+    var targetNodeText = targetNode.nodeValue || ""; //get the text of the subnode our caret is in.
 
-		var span = document.createElement("span"); //create a helper span to be inserted later
-		span.appendChild(document.createTextNode('X'));//…and give it a content.
+    var span = document.createElement("span"); //create a helper span to be inserted later
+    span.appendChild(document.createTextNode('X'));//…and give it a content.
 
-		var textBeforeCaret = targetNodeText.substr(0, leftoverString); //string before the caret
-		var textAfterCaret = targetNodeText.substr(leftoverString); //string after the caret
+    var textBeforeCaret = targetNodeText.substr(0, leftoverString); //string before the caret
+    var textAfterCaret = targetNodeText.substr(leftoverString); //string after the caret
 
-		// Remove the existing text
-		$cloneChildNode.text("");
+    // Remove the existing text
+    $cloneChildNode.text("");
 
-		// reinsert the text, but with the additional node at caret position
+    // reinsert the text, but with the additional node at caret position
 
-		$cloneChildNode[0].appendChild(document.createTextNode(textBeforeCaret)); //insert text before caret
-		$cloneChildNode[0].appendChild(span); //insert element at caret position.
-		$cloneChildNode[0].appendChild(document.createTextNode(textAfterCaret)); //insert text after caret
+    $cloneChildNode[0].appendChild(document.createTextNode(textBeforeCaret)); //insert text before caret
+    $cloneChildNode[0].appendChild(span); //insert element at caret position.
+    $cloneChildNode[0].appendChild(document.createTextNode(textAfterCaret)); //insert text after caret
 
-		$cloneChildNode.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //In order to see where the node we added that the caret position is, we need to insert it into the document. We do not append it in the inner editor (messes with ace), but put it in the outer one.
+    $cloneChildNode.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //In order to see where the node we added that the caret position is, we need to insert it into the document. We do not append it in the inner editor (messes with ace), but put it in the outer one.
 
-		var caretPosition = $(span).offset(); //now we get the position of the element which was inserted at the caret position
-		var scrollYPos = $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position to take it into account.
+    var caretPosition = $(span).offset(); //now we get the position of the element which was inserted at the caret position
+    var scrollYPos = $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position to take it into account.
 
-		$cloneChildNode.remove(); //clean up again.
+    $cloneChildNode.remove(); //clean up again.
 
-		return {
-			top: (caretPosition.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
-			left:caretPosition.left
-		};
-	},
+    return {
+      top: (caretPosition.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
+      left:caretPosition.left
+    };
+  },
 
   getNodeInfoWhereCaretIs: function(context){
     var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x;
@@ -614,75 +616,75 @@ var autocomp = {
     return $clonedNode;
   },
 
-	getParam: function(sname){
-	/*
-	for getting URL parameters
-	sname is the requested key
-	returned is the keys value
+  getParam: function(sname){
+  /*
+  for getting URL parameters
+  sname is the requested key
+  returned is the keys value
 
-	so if you have http://www.someurl.end?foo=bar
-	it will return "bar" if you give it "foo"
-	*/
-	var temp;
-	var params = location.search.substr(location.search.indexOf("?")+1); //"?" devides the actual URL from the parameters
-	var sval = "";
-	params = params.split("&"); //"&" devides the kex/value pairs
+  so if you have http://www.someurl.end?foo=bar
+  it will return "bar" if you give it "foo"
+  */
+  var temp;
+  var params = location.search.substr(location.search.indexOf("?")+1); //"?" devides the actual URL from the parameters
+  var sval = "";
+  params = params.split("&"); //"&" devides the kex/value pairs
 
-	for (var i=0; i<params.length; i++)// split param and value into individual pieces
-	{
-	temp = params[i].split("=");
-	if ( [temp[0]] == sname ) { sval = temp[1]; }
-	}
-	return sval;
-	},
+  for (var i=0; i<params.length; i++)// split param and value into individual pieces
+  {
+  temp = params[i].split("=");
+  if ( [temp[0]] == sname ) { sval = temp[1]; }
+  }
+  return sval;
+  },
 
-	isEditByMe:function(context){
-		/*
-		determines if the edit is done on the authors client or by a collaborator
-		gets: context-objects
-		returns: boolean. true (edit is done by author), false (edit done by someone else)
-		*/
+  isEditByMe:function(context){
+    /*
+    determines if the edit is done on the authors client or by a collaborator
+    gets: context-objects
+    returns: boolean. true (edit is done by author), false (edit done by someone else)
+    */
 
-		/*
-		FIXME: find a better/more clean way to determine authorship.
-		*/
-		if (!context||!context.callstack) return false; //precaution
+    /*
+    FIXME: find a better/more clean way to determine authorship.
+    */
+    if (!context||!context.callstack) return false; //precaution
 
     //this is the only way I found to determine if an edit is caused by input from the current user or from a collaborator
-		if (context.callstack.editEvent.eventType === "idleWorkTimer" || context.callstack.editEvent.eventType === "handleKeyEvent"){
-			return true;
-		}else{
-			return false;
-		}
-	},
-	getPossibleSuggestions:function(context){
-		var hardcodedSuggestions =  autocomp.config.hardcodedSuggestions;
-		var regexToFind=autocomp.config.regexToFind;
+    if (context.callstack.editEvent.eventType === "idleWorkTimer" || context.callstack.editEvent.eventType === "handleKeyEvent"){
+      return true;
+    }else{
+      return false;
+    }
+  },
+  getPossibleSuggestions:function(context){
+    var hardcodedSuggestions =  autocomp.config.hardcodedSuggestions;
+    var regexToFind=autocomp.config.regexToFind;
 
-		var dynamicSuggestions=[];
+    var dynamicSuggestions=[];
 
-		if(context && context.rep.alltext){
-			/*
-			NOTE:
-			Here you can write code to fill the dynamicSuggestions array.
-			The array must be a one-dimensional array containing only string values!
-			*/
-			var allText = context.rep.alltext; //contains all the text from the document in a string.
+    if(context && context.rep.alltext){
+      /*
+      NOTE:
+      Here you can write code to fill the dynamicSuggestions array.
+      The array must be a one-dimensional array containing only string values!
+      */
+      var allText = context.rep.alltext; //contains all the text from the document in a string.
 
-			_.each(regexToFind,function(regEx){
-				dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
-			})
+      _.each(regexToFind,function(regEx){
+        dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
+      })
       // lines with lineAttributes start with '*', we need to remove them
       dynamicSuggestions = _.map(dynamicSuggestions, function(suggestion) {
         if (suggestion.substr(0,1) === "*") return suggestion.substr(1);
         return suggestion;
       });
 
-		}//end if(context && context.rep.lines.allLines){
-		return _.uniq(//uniq: prevent dublicate entrys
-			hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
-		true);//true, since input array is already sorted
-	},
+    }//end if(context && context.rep.lines.allLines){
+    return _.uniq(//uniq: prevent dublicate entrys
+      hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
+    true);//true, since input array is already sorted
+  },
   getCurrentPartialWord:function(context, customRegex){
     //TODO: make section marker dependend on the autocomp.config.regexToFind.
     //what is the  section to be considered? Usually, this will be everything which is not a space.
