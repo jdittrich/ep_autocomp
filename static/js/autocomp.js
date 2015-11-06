@@ -171,14 +171,13 @@ var autocomp = {
         context.evt.preventDefault();
         return true;
       }
-      //ESCAPE TODO: This is not caught. Better we add a close button. For more info see context.evt.keyCode === 32 && context.evt.ctrlKey
-      /*
-      if(context.evt.keyCode === 27){
+      //ESCAPE PRESSED
+      if(this.escPressed(context.evt)){
         autocomp.tempDisabledHelper();
         context.evt.preventDefault();
         $autocomp.hide();
         return true;
-      }*/
+      }
     }
 
     //SPACE AND CONTROL PRESSED
@@ -203,6 +202,9 @@ var autocomp = {
   downPressed: function(evt) {
     // check for shift to avoid confusing "↓" with "(" (shift+9)
     return !evt.shiftKey && evt.keyCode === 40;
+  },
+  escPressed: function(evt) {
+    return evt.keyCode === 27;
   },
   ctrlSpacePressed: function(evt) {
     return evt.ctrlKey && evt.keyCode === 32;

@@ -48,6 +48,26 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     });
   });
 
+  it("hides suggestions when user types ESC", function(done){
+    var outer$ = helper.padOuter$;
+    var inner$ = helper.padInner$;
+
+    // first make sure suggestions are displayed
+    var $lastLine =  inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
+    $lastLine.sendkeys('c');
+    helper.waitFor(function(){
+      return outer$('div#autocomp').is(":visible");
+    }).done(function(){
+      // then press ESC
+      ep_autocomp_test_helper.utils.pressEsc();
+
+      helper.waitFor(function(){
+        return !outer$('div#autocomp').is(":visible");
+      }).done(done);
+    });
+  });
+
   it("applies selected suggestion when user presses ENTER", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
