@@ -19,7 +19,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     this.timeout(60000);
   });
 
-  it("shows suggestions for 'á', 'à', 'ä', 'ã', 'â', 'Á', 'À', 'Ä', 'Ã', 'Â'", function(done){
+  it("shows suggestions with 'á', 'à', 'ä', 'ã', 'â', 'Á', 'À', 'Ä', 'Ã', 'Â' when user types 'a'", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -28,7 +28,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     var $firstLine = inner$("div").first();
     $firstLine.sendkeys('dá dà dä dã dâ dÁ dÀ dÄ dÃ dÂ ');
 
-    // type first letters, so all words written above should be displayed
+    // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('da');
 
     helper.waitFor(function(){
@@ -49,7 +49,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     });
   });
 
-  it("shows suggestions for 'é', 'è', 'ë', 'ê', 'É', 'È', 'Ë', 'Ê'", function(done){
+  it("shows suggestions with 'é', 'è', 'ë', 'ê', 'É', 'È', 'Ë', 'Ê' when user types 'e'", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -58,7 +58,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     var $firstLine = inner$("div").first();
     $firstLine.sendkeys('dé dè dë dê dÉ dÈ dË dÊ ');
 
-    // type first letters, so all words written above should be displayed
+    // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('de');
 
     helper.waitFor(function(){
@@ -77,7 +77,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     });
   });
 
-  it("shows suggestions for 'í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'", function(done){
+  it("shows suggestions with 'í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î' when user types 'i'", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -86,7 +86,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     var $firstLine = inner$("div").first();
     $firstLine.sendkeys('dí dì dï dî dÍ dÌ dÏ dÎ ');
 
-    // type first letters, so all words written above should be displayed
+    // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('di');
 
     helper.waitFor(function(){
@@ -105,7 +105,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     });
   });
 
-  it("shows suggestions for 'ó', 'ò', 'ö', 'õ', 'ô', 'Ó', 'Ò', 'Ö', 'Õ', 'Ô'", function(done){
+  it("shows suggestions with 'ó', 'ò', 'ö', 'õ', 'ô', 'Ó', 'Ò', 'Ö', 'Õ', 'Ô' when user types 'o'", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -114,7 +114,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     var $firstLine = inner$("div").first();
     $firstLine.sendkeys('dó dò dö dõ dô dÓ dÒ dÖ dÕ dÔ ');
 
-    // type first letters, so all words written above should be displayed
+    // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('do');
 
     helper.waitFor(function(){
@@ -135,7 +135,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     });
   });
 
-  it("shows suggestions for 'ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Ü', 'Û'", function(done){
+  it("shows suggestions with 'ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Ü', 'Û' when user types 'u'", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -144,7 +144,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     var $firstLine = inner$("div").first();
     $firstLine.sendkeys('dú dù dü dû dÚ dÙ dÜ dÛ ');
 
-    // type first letters, so all words written above should be displayed
+    // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('du');
 
     helper.waitFor(function(){
@@ -163,7 +163,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     });
   });
 
-  it("shows suggestions for 'ç', 'Ç'", function(done){
+  it("shows suggestions with 'ç', 'Ç' when user types 'c'", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -172,7 +172,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     var $firstLine = inner$("div").first();
     $firstLine.sendkeys('dç dÇ ');
 
-    // type first letters, so all words written above should be displayed
+    // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('dc');
 
     helper.waitFor(function(){
@@ -181,6 +181,39 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
       var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dç");
       expect(suggestions).to.contain("dÇ");
+      done();
+    });
+  });
+
+  // don't need tests for other Latin chars because the code for all of them is the same
+  it("shows suggestions only with 'á' or 'Á' when user types 'á'", function(done){
+    var outer$ = helper.padOuter$;
+    var inner$ = helper.padInner$;
+
+    // write words with Latin characters, so they will be available on suggestions later
+    // (all start with "d" so we can use this prefix to choose which suggestions to show)
+    var $firstLine = inner$("div").first();
+    $firstLine.sendkeys('dáo dào däo dão dâo dao dÁo dÀo dÄo dÃo dÂo dAo ');
+
+    // type first chars, so some words written above should be displayed
+    $firstLine.sendkeys('dá');
+
+    helper.waitFor(function(){
+      return outer$('div#autocomp').is(":visible");
+    }).done(function(){
+      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      expect(suggestions).to.contain("dáo");
+      expect(suggestions).to.not.contain("dào");
+      expect(suggestions).to.not.contain("däo");
+      expect(suggestions).to.not.contain("dão");
+      expect(suggestions).to.not.contain("dâo");
+      expect(suggestions).to.not.contain("dao");
+      expect(suggestions).to.contain("dÁo");
+      expect(suggestions).to.not.contain("dÀo");
+      expect(suggestions).to.not.contain("dÄo");
+      expect(suggestions).to.not.contain("dÃo");
+      expect(suggestions).to.not.contain("dÂo");
+      expect(suggestions).to.not.contain("dAo");
       done();
     });
   });
