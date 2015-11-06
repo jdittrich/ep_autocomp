@@ -173,9 +173,8 @@ var autocomp = {
       }
       //ESCAPE PRESSED
       if(this.escPressed(context.evt)){
-        autocomp.tempDisabledHelper();
+        this.closeSuggestionBox();
         context.evt.preventDefault();
-        $autocomp.hide();
         return true;
       }
     }
