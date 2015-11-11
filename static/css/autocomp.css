@@ -1,6 +1,9 @@
 #autocomp{
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-	overflow-x: hidden; /*auto causes a hiórizontal scrollbar to appear (probably in order to compensate for the space the vertical bar took) as no explicit width is given, the menu still would just widen according to the items inside*/
+  /*auto causes a horizontal scrollbar to appear (probably in order to compensate
+  for the space the vertical bar took) as no explicit width is given,
+  the menu still would just widen according to the items inside*/
+	overflow-x: hidden;
 	overflow-y: auto;
 	max-height: 200px;
 	background-color:rgb(255, 255, 255);
@@ -13,14 +16,11 @@
 }
 
 #autocomp li{
+  cursor: default;
 	list-style-type: none;
 	font-size:12px;
 	padding:2px 5pc 2px 7px;
 	min-width: 45px;
-}
-
-#autocomp li:hover{
-	opacity: 0.6;
 }
 
 #autocomp li.selected{
