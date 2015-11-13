@@ -57,17 +57,6 @@ var autocomp = {
     //natural word matches:  /(\w+)+/g
     //words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
   },
-  tempDisabled:false, //Dirty Hack. See autocomp.tempDisabledHelper and autocomp.aceKeyEvent
-  tempDisabledHelper:function(){
-    //this is a dirty hack: If a key is pressed, aceKeyEvent is sometimes fired twice,
-    //which causes unwanted actions. This function sets tempDisabled to true for a short time
-    //Thus preventing these double events.
-    //
-    autocomp.tempDisabled = true;
-    window.setTimeout(function(){
-      autocomp.tempDisabled=false;
-    },100);
-  },
 
   createAutocompHTML: function(filteredSuggestions, caretPosition, partialWord, context){
   /*
@@ -89,7 +78,7 @@ var autocomp = {
     } //precaution
 
     if(filteredSuggestions.length === 0){
-      $autocomp.hide();
+      this.closeSuggestionBox();
     }
 
     $list.empty();
@@ -137,8 +126,6 @@ var autocomp = {
     if (!autocomp.processKeyEvent) return;
     //precaution
     if(!$autocomp||!context) return;
-    //Dirty hack, see autocomp.tempDisabled and autocomp.tempDisabledHelper
-    if(autocomp.tempDisabled) return;
     //if disabled in settings
     if(!$('#options-autocomp').is(':checked')) return;
 
@@ -182,9 +169,7 @@ var autocomp = {
     //SPACE AND CONTROL PRESSED
     if(this.ctrlSpacePressed(context.evt)){
       if($autocomp.is(":hidden")){
-        autocomp.update(context);
-        $autocomp.show();
-        autocomp.tempDisabledHelper();
+        this.update(context);
       }else{
         this.closeSuggestionBox();
       }
@@ -192,21 +177,21 @@ var autocomp = {
     }
   },
   enterPressed: function(evt) {
-    return evt.keyCode === 13;
+    return evt.type === "keydown" && evt.keyCode === 13;
   },
   upPressed: function(evt) {
     // check for shift to avoid confusing "↑" with "&" (shift+7)
-    return !evt.shiftKey && evt.keyCode === 38;
+    return evt.type === "keydown" && !evt.shiftKey && evt.keyCode === 38;
   },
   downPressed: function(evt) {
     // check for shift to avoid confusing "↓" with "(" (shift+9)
-    return !evt.shiftKey && evt.keyCode === 40;
+    return evt.type === "keydown" && !evt.shiftKey && evt.keyCode === 40;
   },
   escPressed: function(evt) {
-    return evt.keyCode === 27;
+    return evt.type === "keydown" && evt.keyCode === 27;
   },
   ctrlSpacePressed: function(evt) {
-    return evt.ctrlKey && evt.keyCode === 32;
+    return evt.type === "keydown" && evt.ctrlKey && evt.keyCode === 32;
   },
   moveSelectionDown:function(){
     //only do it if the selection is not on the last element already
@@ -228,7 +213,6 @@ var autocomp = {
       }
 
     }
-    autocomp.tempDisabledHelper();
   },
   moveSelectionUp:function(){
     //only do it if the selection is not on the first element already
@@ -243,7 +227,6 @@ var autocomp = {
       }
 
     }
-    autocomp.tempDisabledHelper();
   },
   selectSuggestion:function(context){
     var suggestionFound = false;
@@ -282,8 +265,7 @@ var autocomp = {
         $(currentElement).sendkeys(textToInsert);
       }
 
-      $autocomp.hide();
-      autocomp.tempDisabledHelper();
+      this.closeSuggestionBox();
       suggestionFound = true;
     }
     return suggestionFound;
@@ -348,12 +330,14 @@ var autocomp = {
   },
 
   closeSuggestionBox:function(){
-    autocomp.tempDisabledHelper();
     $autocomp.hide();
   },
   aceEditEvent:function(type, context, cb){
+    // ACE event processing disable by other plugins
     if (!autocomp.processEditEvent) return;
-    if($('#options-autocomp').is(':checked')===false){return;}//if disabled in settings
+    //if disabled in settings
+    if(!$('#options-autocomp').is(':checked')) return;
+
     autocomp.update(context);
   },
   update:function(context, fixedSuggestions, customRegex){
@@ -368,7 +352,7 @@ var autocomp = {
     //hide suggestions if no word is typed
     var wordIsEmpty = partialWord.length === 0;
     if(!this.showOnEmptyWords && wordIsEmpty){
-      $autocomp.hide();
+      this.closeSuggestionBox();
       return;
     }
 
@@ -376,7 +360,7 @@ var autocomp = {
     filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions);
 
     if(filteredSuggestions.length===0){
-      $autocomp.hide();
+      this.closeSuggestionBox();
       return;
     }
 
