@@ -168,6 +168,7 @@ var autocomp = {
 
     //SPACE AND CONTROL PRESSED
     if(this.ctrlSpacePressed(context.evt)){
+      context.evt.preventDefault();
       if($autocomp.is(":hidden")){
         this.update(context);
       }else{
