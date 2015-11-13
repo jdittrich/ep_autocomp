@@ -217,18 +217,25 @@ var autocomp = {
       removeClass("selected").
       next().
       addClass("selected");
-
-      var offsetFromContainer = $list.children(".selected").position().top -  $autocomp.height();
-
+      var $selectListItem = $list.children(".selected");
+      var elementPaddingTop = this.getIntValueOfCSSProperty($selectListItem, "padding-top");
+      // position().top does not consider the element padding.
+      var listElementHeight = $selectListItem.position().top + elementPaddingTop;
+      var offsetFromContainer = listElementHeight -  $autocomp.height();
       //scroll element into view if needed.
-      //calculate offset between lower edge of the container and the position of the element.
-      //If the number is positive, the lement is not visible.
-      if(offsetFromContainer< 0){
-        $autocomp.scrollTop($autocomp.scrollTop()+offsetFromContainer)
+      //calculate offset between lower edge of the container and the position plus padding-top of the element.
+      //If the number is positive or zero, the element is not visible.
+      if(offsetFromContainer >= 0){
+        $autocomp.scrollTop($autocomp.scrollTop() + listElementHeight);
       }
 
     }
     autocomp.tempDisabledHelper();
+  },
+  getIntValueOfCSSProperty: function($element, property){
+    var valueString = $element.css(property);
+    var valueInt = valueString.replace(/[^-\d\.]/g, '');
+    return Number(valueInt);
   },
   moveSelectionUp:function(){
     //only do it if the selection is not on the first element already
