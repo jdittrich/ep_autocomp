@@ -134,6 +134,7 @@ var autocomp = {
     //if key is ↑ , choose next option, prevent default
     //if key is ↓ , choose next option, prevent default
     //if key is ENTER, read out the complementation, close autocomplete menu and input it at caret. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
+    var eventProcessed = false;
     if($autocomp.is(":visible")){
       //ENTER PRESSED
       if(this.enterPressed(context.evt)){
@@ -142,7 +143,7 @@ var autocomp = {
           context.evt.preventDefault();
           // return value should be true if the event was handled.
           // So we return true which can be returned by the hook itself consequently.
-          return true;
+          eventProcessed = true;
         }
       }
 
@@ -150,32 +151,38 @@ var autocomp = {
       if(this.upPressed(context.evt)){
         this.moveSelectionUp();
         context.evt.preventDefault();
-        return true;
+        eventProcessed = true;
       }
       //DOWN PRESSED
       if(this.downPressed(context.evt)){
         this.moveSelectionDown();
         context.evt.preventDefault();
-        return true;
+        eventProcessed = true;
       }
       //ESCAPE PRESSED
       if(this.escPressed(context.evt)){
         this.closeSuggestionBox();
         context.evt.preventDefault();
-        return true;
+        eventProcessed = true;
       }
     }
 
     //SPACE AND CONTROL PRESSED
     if(this.ctrlSpacePressed(context.evt)){
-      context.evt.preventDefault();
       if($autocomp.is(":hidden")){
         this.update(context);
       }else{
         this.closeSuggestionBox();
       }
-      return true;
+      eventProcessed = true;
     }
+
+    // did we process the event? If so, prevent default action
+    if (eventProcessed) {
+      context.evt.preventDefault();
+    }
+
+    return eventProcessed;
   },
   enterPressed: function(evt) {
     return evt.type === "keydown" && evt.keyCode === 13;
