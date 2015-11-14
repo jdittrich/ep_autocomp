@@ -29,6 +29,9 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
   });
 
   it("hides suggestions when user types a word that does not match any other from the text", function(done){
+    // this is a longer test, give it more time to run
+    this.timeout(5000);
+
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -44,7 +47,7 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       $lastLine.sendkeys('notSavedWord');
       helper.waitFor(function(){
         return !outer$('div#autocomp').is(":visible");
-      }).done(done);
+      }, 2000).done(done);
     });
   });
 
