@@ -118,6 +118,7 @@ var autocomp = {
     // show suggestions next to caret position
     $autocomp
       .show()
+      .scrollTop(0) // does not keep previous scroll position
       .css({top: caretPosition.top, left: caretPosition.left});
   },
 
