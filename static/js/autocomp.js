@@ -695,7 +695,8 @@ var autocomp = {
     var caretColumnPosition = this.getCaretColumnOnline(context);
     var currentLine         = this.getCurrentLine(context);
     var textBeforeCaret     = currentLine.slice(0,caretColumnPosition); //from beginning until caret
-    var partialWord         = textBeforeCaret.match(sectionMarker)[index];
+    var regexMatches        = textBeforeCaret.match(sectionMarker);
+    var partialWord         = regexMatches ? regexMatches[index] : "";
     return partialWord;
   },
   hasMarker:function(context, line){
