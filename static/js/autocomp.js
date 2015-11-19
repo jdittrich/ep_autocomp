@@ -355,14 +355,14 @@ var autocomp = {
 
     autocomp.update(context);
   },
-  update:function(context, fixedSuggestions, customRegex){
+  update:function(context, fixedSuggestions, customRegex, customRegexIndex){
 
     if(context.rep.selStart === null) return;
     //as edit event is called when anyone edits, we must ensure it is the current user
     if(!autocomp.isEditByMe(context)) return;
 
     //get the word which is being typed
-    var partialWord = this.getCurrentPartialWord(context, customRegex);
+    var partialWord = this.getCurrentPartialWord(context, customRegex, customRegexIndex);
 
     //hide suggestions if no word is typed
     var wordIsEmpty = partialWord.length === 0;
@@ -683,17 +683,18 @@ var autocomp = {
       hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
     true);//true, since input array is already sorted
   },
-  getCurrentPartialWord:function(context, customRegex){
+  getCurrentPartialWord:function(context, customRegex, customRegexIndex){
     //TODO: make section marker dependend on the autocomp.config.regexToFind.
     //what is the  section to be considered? Usually, this will be everything which is not a space.
     //The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end.
     //(To understand better, just paste into regexpal.com)
     var sectionMarker = customRegex || /[\S]*$/;
+    var index = customRegexIndex || 0;
 
     var caretColumnPosition = this.getCaretColumnOnline(context);
     var currentLine         = this.getCurrentLine(context);
     var textBeforeCaret     = currentLine.slice(0,caretColumnPosition); //from beginning until caret
-    var partialWord         = textBeforeCaret.match(sectionMarker)[0];
+    var partialWord         = textBeforeCaret.match(sectionMarker)[index];
     return partialWord;
   },
   hasMarker:function(context, line){
