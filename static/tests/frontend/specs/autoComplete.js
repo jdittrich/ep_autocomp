@@ -151,27 +151,34 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
       ep_autocomp_test_helper.utils.addAttributeToLine(3, cb);
     });
 
-    context("and there is no content after caret", function(){
+    it("ignores * in the beginning of line", function(done){
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
 
-      it("ignores * in the beginning of line", function(done){
-        var outer$ = helper.padOuter$;
-        var inner$ = helper.padInner$;
+      //using contents was the only way we found to set content of a list item
+      var $lastLine = inner$("div").last().find("ul li").contents();
 
-        //using contents was the only way we found to set content of a list item
-        var $lastLine = inner$("div").last().find("ul li").contents();
-
-        $lastLine.sendkeys('a');
-        helper.waitFor(function(){
-          return outer$('div#autocomp').is(":visible");
-        }).done(function(){
-          var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
-          expect(suggestions).to.contain("car");
-          done();
-        });
+      $lastLine.sendkeys('a');
+      helper.waitFor(function(){
+        return outer$('div#autocomp').is(":visible");
+      }).done(function(){
+        var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+        expect(suggestions).to.contain("car");
+        done();
       });
     });
 
     context("and there is already content after caret", function(){
+      beforeEach(function() {
+        var inner$ = helper.padInner$;
+
+        // using contents was the only way we found to set content of a list item
+        var $lastLine = inner$("div").last().find("ul li").contents();
+
+        // add content after caret
+        $lastLine.sendkeys('s{leftarrow}');
+      });
+
       it("displays suggestions matching text before the caret", function(done){
         var outer$ = helper.padOuter$;
         var inner$ = helper.padInner$;
@@ -179,8 +186,6 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
         //using contents was the only way we found to set content of a list item
         var $lastLine = inner$("div").last().find("ul li").contents();
 
-        // add content after caret
-        $lastLine.sendkeys('s{leftarrow}');
         // type "a" to have "ca" before caret, so suggestion list has "car"
         $lastLine.sendkeys('a');
 
@@ -193,8 +198,43 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
           done();
         });
       });
-    });
 
+      context("and caret is on beginning of line", function() {
+        beforeEach(function(cb) {
+          // show suggestions for empty prefixes (so we can choose a suggestion when caret is
+          // on beginning of line)
+          var autocomp = helper.padChrome$.window.autocomp;
+          autocomp.showOnEmptyWords = true;
+
+          // move caret to beginning of line (line has "cs" at this point)
+          var inner$ = helper.padInner$;
+          var outer$ = helper.padOuter$;
+          var $lastLine = inner$("div").last().find("ul li").contents();
+          $lastLine.sendkeys('{leftarrow}');
+
+          helper.waitFor(function(){
+            return outer$('div#autocomp').is(":visible");
+          }).done(cb);
+        });
+
+        it("keeps line attributes when suggestion is selected", function(done) {
+          var inner$ = helper.padInner$;
+
+          // select first suggestion (should be "car")
+          ep_autocomp_test_helper.utils.pressEnter();
+
+          // verify line attribute was kept on line
+          var $lastLine = inner$("div").last().find("ul li");
+          var hasLineAttribute = $lastLine.length > 0;
+          expect(hasLineAttribute).to.be(true);
+
+          // verify suggestion was correctly inserted
+          expect($lastLine.text()).to.be("carcs");
+
+          done();
+        });
+      });
+    });
   });
 });
 
