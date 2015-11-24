@@ -112,10 +112,13 @@ ep_autocomp_test_helper.navigation = {
       rep: {
         lines: {
           atIndex: function(i) {
-            return {lineNode: $currentElement[0]}
+            return {
+              lineNode: $currentElement[0],
+              domInfo: { node: $currentElement[0] },
+            }
           }
         },
-        selEnd: [1],
+        selEnd: [1, 1],
       }
     }
     return context;

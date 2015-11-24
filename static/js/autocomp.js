@@ -256,28 +256,32 @@ var autocomp = {
     var suggestionText = $selectedSuggestion.text();
 
     // the element the caret is in
-    var currentElement = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
+    var currentLineNode = context.rep.lines.atIndex(context.rep.selEnd[0]).lineNode;
 
     if(textToInsert !== undefined){
       // register listener to be able to call all callbacks when sendkeys is done
-      $(currentElement).on("sendkeys", function() {
+      $(currentLineNode).on("sendkeys", function() {
         // unregister listener to avoid duplicate calls in the future
-        $(currentElement).off("sendkeys");
+        $(currentLineNode).off("sendkeys");
 
         // fix replaced text if necessary (see more details on fixReplacedText())
-        autocomp.fixReplacedText(currentElement, suggestionText, textToInsert, textAlreadyInserted);
+        autocomp.fixReplacedText(currentLineNode, suggestionText, textToInsert, textAlreadyInserted);
 
         autocomp.callPostSuggestionSelectedCallbacks();
       });
 
       // Empty lines always have a <br>, so due to problems with inserting text
       // with sendkeys, in this case, we need to insert the html directly
-      var emptyLine = $(currentElement).find("br");
+      var emptyLine = $(currentLineNode).find("br");
       var lineIsEmpty = emptyLine.length;
       if (lineIsEmpty){
         emptyLine.replaceWith("<span>" + textToInsert + "</span>");
-        this.adjustCaretPosition(currentElement, textToInsert);
+        this.adjustCaretPosition(currentLineNode, textToInsert);
       }else{
+        // we cannot use sendkeys with currentLineNode (the div whith the full line on editor)
+        // because this removes lineAttributes if caret is on beginning of line. To avoid this,
+        // we use sendkeys with the specific text node where caret is
+        var currentElement = this.getNodeInfoWhereCaretIs(context).node;
         $(currentElement).sendkeys(textToInsert);
       }
 
