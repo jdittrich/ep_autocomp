@@ -33,6 +33,8 @@ var autocomp = {
   // (user types "a" and we show suggestions like "ál", "ão", etc.)
   ignoreLatinCharacters: false,
 
+  tagetLine: undefined,
+
   // collection of callbacks to be called after user selects a suggestion from the list
   postSuggestionSelectedCallbacks: {},
   addPostSuggestionSelectedCallback: function(id, callback) {
@@ -80,6 +82,8 @@ var autocomp = {
     if(filteredSuggestions.length === 0){
       this.closeSuggestionBox();
     }
+
+    this.targetLine = context.rep.selEnd[0];
 
     $list.empty();
 
@@ -349,7 +353,8 @@ var autocomp = {
     }
   },
 
-  closeSuggestionBox:function(){
+  closeSuggestionBox:function(context){
+    this.targetLine = undefined;
     $autocomp.hide();
   },
   aceEditEvent:function(type, context, cb){

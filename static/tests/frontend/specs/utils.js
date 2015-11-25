@@ -111,5 +111,22 @@ ep_autocomp_test_helper.utils = {
       return $(el).text();
     })
     return texts;
-  }
+  },
+
+  mockContext: function($currentElement){
+    var context = {
+      rep: {
+        lines: {
+          atIndex: function(i) {
+            return {
+              lineNode: $currentElement[0],
+              domInfo: { node: $currentElement[0] },
+            }
+          }
+        },
+        selEnd: [1, 1],
+      }
+    }
+    return context;
+  },
 };
