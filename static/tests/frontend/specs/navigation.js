@@ -30,7 +30,7 @@ describe("ep_autocomp - commands auto complete", function(){
       expect(selectedSuggestion.text()).to.be("chrome");
       done();
     });
-  })
+  });
 
   it("moves selection to a position above", function(done){
     var outer$ = helper.padOuter$;
@@ -55,7 +55,8 @@ describe("ep_autocomp - commands auto complete", function(){
       expect(selectedSuggestion.text()).to.be("chrome");
       done();
     });
-  })
+  });
+
   it("selects suggestion", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
@@ -67,7 +68,7 @@ describe("ep_autocomp - commands auto complete", function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function() {
       var $lastLine = inner$('div').last();
-      var context = ep_autocomp_test_helper.navigation.mockContext($lastLine);
+      var context = ep_autocomp_test_helper.utils.mockContext($lastLine);
 
       // force autocomplete to select first option
       var autocomp = helper.padChrome$.window.autocomp;
@@ -78,7 +79,7 @@ describe("ep_autocomp - commands auto complete", function(){
         return $lastLine.text() === "car";
       }).done(done);
     });
-  })
+  });
 
   it("closes suggestions box without replacing the text", function(done){
     var outer$ = helper.padOuter$;
@@ -102,25 +103,7 @@ describe("ep_autocomp - commands auto complete", function(){
         done();
       });
     });
-  })
-})
+  });
+});
 
 var ep_autocomp_test_helper = ep_autocomp_test_helper || {};
-ep_autocomp_test_helper.navigation = {
-  mockContext: function($currentElement){
-    var context = {
-      rep: {
-        lines: {
-          atIndex: function(i) {
-            return {
-              lineNode: $currentElement[0],
-              domInfo: { node: $currentElement[0] },
-            }
-          }
-        },
-        selEnd: [1, 1],
-      }
-    }
-    return context;
-  }
-}
