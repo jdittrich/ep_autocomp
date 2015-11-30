@@ -32,6 +32,8 @@ var autocomp = {
   // flag to consider Latin characters as their non-Latin equivalents
   // (user types "a" and we show suggestions like "ál", "ão", etc.)
   ignoreLatinCharacters: false,
+  // flag to keep track of target line even if there is no suggestion for the typed text
+  doNotResetTargetLineOnEmptySuggestionList: false,
 
   tagetLine: undefined,
 
@@ -78,10 +80,6 @@ var autocomp = {
       console.log("insufficent attributes");
       return;
     } //precaution
-
-    if(filteredSuggestions.length === 0){
-      this.closeSuggestionBox();
-    }
 
     this.targetLine = context.rep.selEnd[0];
 
@@ -386,6 +384,12 @@ var autocomp = {
 
     if(filteredSuggestions.length===0){
       this.closeSuggestionBox();
+
+      // still keep track of target line if flag is on
+      if (this.doNotResetTargetLineOnEmptySuggestionList) {
+        this.targetLine = context.rep.selEnd[0];
+      }
+
       return;
     }
 
