@@ -54,6 +54,7 @@ ep_autocomp_test_helper.utils = {
     autocomp.processKeyEvent = true;
     autocomp.processEditEvent = true;
     autocomp.showOnEmptyWords = false;
+    autocomp.doNotResetTargetLineOnEmptySuggestionList = false;
     return;
   },
 

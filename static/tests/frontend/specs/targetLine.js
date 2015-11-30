@@ -32,6 +32,61 @@ describe("ep_autocomp - target line", function(){
     });
   });
 
+  it("resets target line when no suggestion is available for typed text", function(done){
+    this.timeout(5000);
+
+    var outer$ = helper.padOuter$;
+    var inner$ = helper.padInner$;
+    var autocomp = helper.padChrome$.window.autocomp;
+
+    // opens suggestions box
+    var $lastLine = inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
+    $lastLine.sendkeys('c');
+    helper.waitFor(function(){
+      return autocomp.targetLine !== undefined;
+    }).done(function() {
+      // type something that won't have suggestions
+      var $lastLine = inner$("div").last();
+      $lastLine.sendkeys('ccc');
+
+      // wait for targetLine to be updated
+      helper.waitFor(function(){
+        return autocomp.targetLine === undefined;
+      }).done(done);
+    });
+  });
+
+  context("when flag to not reset target on empty suggestion list is enabled", function() {
+    beforeEach(function() {
+      var autocomp = helper.padChrome$.window.autocomp;
+      autocomp.doNotResetTargetLineOnEmptySuggestionList = true;
+    });
+
+    it("does not reset target line when no suggestion is available for typed text", function(done){
+      this.timeout(5000);
+
+      var outer$ = helper.padOuter$;
+      var inner$ = helper.padInner$;
+      var autocomp = helper.padChrome$.window.autocomp;
+      var targetLine = 3;
+
+      // type something that won't have suggestions
+      var $lastLine = inner$("div").last();
+      $lastLine.sendkeys('{selectall}');
+      $lastLine.sendkeys('cccc');
+
+      // wait for targetLine to be updated
+      helper.waitFor(function(){
+        return autocomp.targetLine !== undefined;
+      }).done(function() {
+        expect(autocomp.targetLine).to.be(targetLine);
+
+        done();
+      });
+    });
+  });
+
   it("resets target line when suggestion is selected", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
