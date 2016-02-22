@@ -657,15 +657,11 @@ var autocomp = {
     returns: boolean. true (edit is done by author), false (edit done by someone else)
     */
 
-    /*
-    FIXME: find a better/more clean way to determine authorship.
-    */
     if (!context||!context.callstack) return false; //precaution
 
-    //this is the only way I found to determine if an edit is caused by input from the current user or from a collaborator
-    if (context.callstack.editEvent.eventType === "idleWorkTimer" || context.callstack.editEvent.eventType === "handleKeyEvent"){
+    if (context.callstack.editEvent.eventType !== "applyChangesToBase") {
       return true;
-    }else{
+    } else {
       return false;
     }
   },
