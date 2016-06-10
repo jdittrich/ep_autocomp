@@ -17,19 +17,27 @@ exports.postAceInit = function(type, context){
     $outerdocbody.append($autocomp);
   }
 
+  // Enable checkbox if it's set in settings
+  if(clientVars.ep_autocomp.enabled === true){
+    $('#options-autocomp').prop("checked", true);
+  }else{
+    $('#options-autocomp').prop("checked", false);
+  }
+
   /* on click */
   //  "#options-autocomp" is simply the id/selector of the input with the checkbox determining if autocomp is toggled or not.
   $('#options-autocomp').on('click', function() {
-  if($('#options-autocomp').is(':checked')===false){
-  $autocomp.hide();
+    if($('#options-autocomp').is(':checked')===false){
+      $autocomp.hide();
    }
   });
 
   var urlContainsAutocTrue = (autocomp.getParam("autocomp") == "true"); // if the url param is set
-   if(urlContainsAutocTrue){
-  $('#options-autocomp').attr('checked','checked'); //#options-autocomp is simply the id of the input with the checkbox
+  if(urlContainsAutocTrue){
+console.log("derp");
+    $('#options-autocomp').attr('checked','checked'); //#options-autocomp is simply the id of the input with the checkbox
   }else if (autocomp.getParam("autocomp") == "false"){
-  $('#options-autocomp').attr('checked',false);
-  $autocomp.hide();
+    $('#options-autocomp').attr('checked',false);
+    $autocomp.hide();
   }
 };

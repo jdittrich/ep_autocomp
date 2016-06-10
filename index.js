@@ -34,3 +34,21 @@ exports.eejsBlock_mySettings = function (hook_name, args, cb) {
   return cb();
 }
 
+exports.clientVars = function (hook, context, cb) {
+
+  var enabled = settings.ep_autocomp ? settings.ep_autocomp.enabled : true;
+  var hardcodedSuggestions = settings.ep_autocomp ? settings.ep_autocomp.hardCodedSuggestions : [];
+  var regexToFind = settings.ep_autocomp ? settings.ep_autocomp.regexToFind : [/(\S+)/g];
+  var suggestWordsInDocument = settings.ep_autocomp ? settings.ep_autocomp.suggestWordsInDocument : false;
+  var updateFromSourceObject = settings.ep_autocomp ? settings.ep_autocomp.updateFromSourceObject : false;
+
+  return cb({
+    "ep_autocomp": {
+      enabled: enabled,
+      hardcodedSuggestions: hardcodedSuggestions,
+      regexToFind: regexToFind,
+      suggestWordsInDocument: suggestWordsInDocument,
+      updateFromSourceObject: updateFromSourceObject
+    }
+  });
+};
