@@ -51,21 +51,6 @@ var autocomp = {
     });
   },
 
-  config:{
-    // TODO
-    // Move this ot external JSON. Save Regexes as Strings, parse them when needed.
-    hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
-    regexToFind:[/(\S+)/g],//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
-    suggestWordsInDocument:true, // Use words in document to built a dictionary
-    enabled:false, // Enabled by default?
-    updateFromSourceObject: false // Update the autocomplete suggestions from a different object
-    //EXAMPLE REGEXES:
-    // /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
-    // /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
-    //natural word matches:  /(\w+)+/g
-    //words in code (all non-whitespace, so strings with $, % etc, included) /(\S+)/g
-  },
-
   createAutocompHTML: function(filteredSuggestions, caretPosition, partialWord, context){
   /*
   creates the dom element for the menu.
@@ -357,7 +342,9 @@ var autocomp = {
 
   closeSuggestionBox:function(context){
     this.targetLine = undefined;
-    $autocomp.hide();
+    if($autocomp){
+      $autocomp.hide();
+    }
   },
   aceEditEvent:function(type, context, cb){
     // ACE event processing disable by other plugins
@@ -668,11 +655,12 @@ var autocomp = {
     }
   },
   getPossibleSuggestions:function(context){
-    var hardcodedSuggestions =  autocomp.config.hardcodedSuggestions;
-    if(autocomp.config.updateFromSourceObject){
-      var sourceSuggestions = eval(autocomp.config.updateFromSourceObject);
+    var hardcodedSuggestions =  clientVars.ep_autocomp.hardcodedSuggestions || [];
+    var sourceSuggestions = [];
+    if(clientVars.ep_autocomp.updateFromSourceObject){
+      sourceSuggestions = eval(clientVars.ep_autocomp.updateFromSourceObject);
     }
-    var regexToFind=autocomp.config.regexToFind;
+    var regexToFind=eval(clientVars.ep_autocomp.regexToFind);
 
     var dynamicSuggestions=[];
 
@@ -683,8 +671,7 @@ var autocomp = {
       The array must be a one-dimensional array containing only string values!
       */
       var allText = context.rep.alltext; //contains all the text from the document in a string.
-      if(!autocomp.config.suggestWordsInDocument) allText = ""; // dont suggest words in document
-
+      if(!clientVars.ep_autocomp.suggestWordsInDocument) allText = ""; // dont suggest words in document
       _.each(regexToFind,function(regEx){
         dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
       })
@@ -693,14 +680,13 @@ var autocomp = {
         if (suggestion.substr(0,1) === "*") return suggestion.substr(1);
         return suggestion;
       });
-
     }//end if(context && context.rep.lines.allLines){
     return _.uniq(//uniq: prevent dublicate entrys
       hardcodedSuggestions.concat(dynamicSuggestions).concat(sourceSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
     true);//true, since input array is already sorted
   },
   getCurrentPartialWord:function(context, customRegex, customRegexIndex){
-    //TODO: make section marker dependend on the autocomp.config.regexToFind.
+    //TODO: make section marker dependend on the clientVars.ep_autocomp.regexToFind.
     //what is the  section to be considered? Usually, this will be everything which is not a space.
     //The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end.
     //(To understand better, just paste into regexpal.com)

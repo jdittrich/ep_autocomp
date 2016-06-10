@@ -19,10 +19,26 @@ In its preconfigured form it completes words (searches the document for words, s
 
 ### Advanced customization
 
-See the value `autocomp.config` in the  `ep_autocomp/static/js/autocomp.js` file
+Include stuff in settings.json
+
+```
+  "ep_autocomp":{
+    "hardcodedSuggestions":[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.    
+    "regexToFind":"[/(\\S+)/g]",
+    "suggestWordsInDocument": true, // Use words in document to built a dictionary
+    "enabled": false, // Enabled by default?
+    "updateFromSourceObject": false // Update the autocomplete suggestions from a different object
+    //EXAMPLE REGEXES:
+    // /(#\\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
+    // /(#\\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
+    //natural word matches:  /(\\w+)+/g
+    //words in code (all non-whitespace, so strings with $, % etc, included) /(\\S+)/g
+  }
+```
+
 for customizing simple cases and the value `autocomp.getPossibleSuggestions` for more complex customizations.
 
-Originally, this was written to autocomplete hashtags, you may want to complet from list of predefined keywords or from a hash of usernames after typing an *@* etc. There are some examples in the sourcecode.
+Originally, this was written to autocomplete hashtags, you may want to complete from list of predefined keywords or from a hash of usernames after typing an *@* etc. There are some examples in the sourcecode.
 
 ## Install
 Open terminal, navigate  to your etherpad folder and: type `npm install ep_autocomp` OR type `git clone https://github.com/jdittrich/ep_autocomp.git node_modules/ep_autocomp`
