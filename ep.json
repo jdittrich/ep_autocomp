@@ -9,10 +9,10 @@
         "clientVars"            : "ep_autocomp/index"
       },
       "client_hooks":{
-        "aceEditEvent"         	: "ep_autocomp/static/js/aceEditEvent:aceEditEvent",
-        "aceKeyEvent"        	: "ep_autocomp/static/js/aceKeyEvent:aceKeyEvent",
-        "postAceInit"          	: "ep_autocomp/static/js/postAceInit:postAceInit",
-	"aceEditorCSS"		: "ep_autocomp/static/js/aceEditorCSS:aceEditorCSS"
+        "aceEditEvent"          : "ep_autocomp/static/js/aceEditEvent:aceEditEvent",
+        "aceKeyEvent"           : "ep_autocomp/static/js/aceKeyEvent:aceKeyEvent",
+        "postAceInit"           : "ep_autocomp/static/js/postAceInit:postAceInit",
+	"aceEditorCSS"	        : "ep_autocomp/static/js/aceEditorCSS:aceEditorCSS"
       }
     }
   ]
