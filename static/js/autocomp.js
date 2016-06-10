@@ -57,8 +57,8 @@ var autocomp = {
     hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
     regexToFind:[/(\S+)/g],//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
     suggestWordsInDocument:true, // Use words in document to built a dictionary
-    enabled:true, // Enabled by default?
-    updateFromSourceObject: "clientVars.plugins.plugins.ep_context.styles" // Update the autocomplete suggestions from a different object
+    enabled:false, // Enabled by default?
+    updateFromSourceObject: false // Update the autocomplete suggestions from a different object
     //EXAMPLE REGEXES:
     // /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
     // /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
@@ -683,7 +683,7 @@ var autocomp = {
       The array must be a one-dimensional array containing only string values!
       */
       var allText = context.rep.alltext; //contains all the text from the document in a string.
-      if(autocomp.config.suggestWordsInDocument) allText = "";
+      if(!autocomp.config.suggestWordsInDocument) allText = ""; // dont suggest words in document
 
       _.each(regexToFind,function(regEx){
         dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
