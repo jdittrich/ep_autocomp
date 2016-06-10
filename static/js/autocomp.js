@@ -52,9 +52,13 @@ var autocomp = {
   },
 
   config:{
-    //move this ot external JSON. Save Regexes as Strings, parse them when needed.
+    // TODO
+    // Move this ot external JSON. Save Regexes as Strings, parse them when needed.
     hardcodedSuggestions:[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
-    regexToFind:[/(\S+)/g]//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
+    regexToFind:[/(\S+)/g],//array with regexes. The matches of this regex(es) will be assed to the suggestions array.
+    suggestWordsInDocument:true, // Use words in document to built a dictionary
+    enabled:true, // Enabled by default?
+    updateFromSourceObject: "clientVars.plugins.plugins.ep_context.styles" // Update the autocomplete suggestions from a different object
     //EXAMPLE REGEXES:
     // /(#\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
     // /(#\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
@@ -360,11 +364,9 @@ var autocomp = {
     if (!autocomp.processEditEvent) return;
     //if disabled in settings
     if(!$('#options-autocomp').is(':checked')) return;
-
     autocomp.update(context);
   },
   update:function(context, fixedSuggestions, customRegex, customRegexIndex){
-
     if(context.rep.selStart === null) return;
     //as edit event is called when anyone edits, we must ensure it is the current user
     if(!autocomp.isEditByMe(context)) return;
@@ -667,6 +669,9 @@ var autocomp = {
   },
   getPossibleSuggestions:function(context){
     var hardcodedSuggestions =  autocomp.config.hardcodedSuggestions;
+    if(autocomp.config.updateFromSourceObject){
+      var sourceSuggestions = eval(autocomp.config.updateFromSourceObject);
+    }
     var regexToFind=autocomp.config.regexToFind;
 
     var dynamicSuggestions=[];
@@ -678,6 +683,7 @@ var autocomp = {
       The array must be a one-dimensional array containing only string values!
       */
       var allText = context.rep.alltext; //contains all the text from the document in a string.
+      if(autocomp.config.suggestWordsInDocument) allText = "";
 
       _.each(regexToFind,function(regEx){
         dynamicSuggestions = dynamicSuggestions.concat(allText.match(regEx)||[] );
@@ -690,7 +696,7 @@ var autocomp = {
 
     }//end if(context && context.rep.lines.allLines){
     return _.uniq(//uniq: prevent dublicate entrys
-      hardcodedSuggestions.concat(dynamicSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
+      hardcodedSuggestions.concat(dynamicSuggestions).concat(sourceSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
     true);//true, since input array is already sorted
   },
   getCurrentPartialWord:function(context, customRegex, customRegexIndex){
@@ -733,6 +739,4 @@ var autocomp = {
     }
     return currentColumn;
   }
-
 };
-

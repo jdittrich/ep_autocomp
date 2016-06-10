@@ -17,6 +17,11 @@ exports.postAceInit = function(type, context){
     $outerdocbody.append($autocomp);
   }
 
+  // Enable checkbox if it's set in config
+  if(autocomp.config.enabled){
+    $('#options-autocomp').prop("checked", true);
+  }
+
   /* on click */
   //  "#options-autocomp" is simply the id/selector of the input with the checkbox determining if autocomp is toggled or not.
   $('#options-autocomp').on('click', function() {
