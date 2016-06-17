@@ -424,7 +424,9 @@ var autocomp = {
     var transformedPossibleSuggestion = possibleSuggestion;
     var transformedPartialWord        = partialWord;
 
-    if(clientVars.ep_autocomp && clientVars.ep_autocomp.caseSensitiveMatch){
+    this.caseSensitiveMatch = true;
+
+    if(clientVars.ep_autocomp.caseSensitiveMatch === false){
       this.caseSensitiveMatch = false;
     }
 
