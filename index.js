@@ -41,6 +41,7 @@ exports.clientVars = function (hook, context, cb) {
   var regexToFind = settings.ep_autocomp ? settings.ep_autocomp.regexToFind : [/(\S+)/g];
   var suggestWordsInDocument = settings.ep_autocomp ? settings.ep_autocomp.suggestWordsInDocument : false;
   var updateFromSourceObject = settings.ep_autocomp ? settings.ep_autocomp.updateFromSourceObject : false;
+  var caseSensitiveMatch = settings.ep_autocomp ? settings.ep_autocomp.caseSensitiveMatch : true;
 
   return cb({
     "ep_autocomp": {
@@ -48,7 +49,8 @@ exports.clientVars = function (hook, context, cb) {
       hardcodedSuggestions: hardcodedSuggestions,
       regexToFind: regexToFind,
       suggestWordsInDocument: suggestWordsInDocument,
-      updateFromSourceObject: updateFromSourceObject
+      updateFromSourceObject: updateFromSourceObject,
+      caseSensitiveMatch: caseSensitiveMatch
     }
   });
 };

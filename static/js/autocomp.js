@@ -27,8 +27,6 @@ var autocomp = {
   processEditEvent: true,
   // flag to allow show suggestions even if no word is typed
   showOnEmptyWords: false,
-  // flag to allow show suggestions with/without case sensitive
-  caseSensitiveMatch: true,
   // flag to consider Latin characters as their non-Latin equivalents
   // (user types "a" and we show suggestions like "ál", "ão", etc.)
   ignoreLatinCharacters: false,
@@ -120,7 +118,6 @@ var autocomp = {
     if(!$autocomp||!context) return;
     //if disabled in settings
     if(!$('#options-autocomp').is(':checked')) return;
-
     //if not menu not shown, don't prevent defaults
 
     //if key is ↑ , choose next option, prevent default
@@ -427,8 +424,14 @@ var autocomp = {
     var transformedPossibleSuggestion = possibleSuggestion;
     var transformedPartialWord        = partialWord;
 
+    this.caseSensitiveMatch = true;
+
+    if(clientVars.ep_autocomp.caseSensitiveMatch === false){
+      this.caseSensitiveMatch = false;
+    }
+
     // check if it should be considered matches without matching case
-    if (!this.caseSensitiveMatch) {
+    if (!this.caseSensitiveMatch){
       transformedPossibleSuggestion = transformedPossibleSuggestion.toLowerCase();
       transformedPartialWord        = transformedPartialWord.toLowerCase();
     }

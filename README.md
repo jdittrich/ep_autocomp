@@ -13,7 +13,6 @@ In its preconfigured form it completes words (searches the document for words, s
 * `processKeyEvent`: define if ep_autocomp should handle ace key events (arrow keys, ENTER, etc). Default: true
 * `processEditEvent`: define if ep_autocomp should handle ace edit events (user editing a word). Default: true
 * `showOnEmptyWords`: define if suggestions should be displayed even when user didn't type any word. Useful for plugins that control when suggestions are displayed or not. Default: false
-* `caseSensitiveMatch`: define if suggestions should respect case of typed words. Default: true
 * `ignoreLatinCharacters`: define if Latin characters should be considered the same as their non-Latin equivalents. Ex: user types "a", suggestions include words like "ál", "ão", etc. Default: false
 
 
@@ -27,7 +26,8 @@ Include stuff in settings.json
     "regexToFind":"[/(\\S+)/g]",
     "suggestWordsInDocument": true, // Use words in document to built a dictionary
     "enabled": false, // Enabled by default?
-    "updateFromSourceObject": false // Update the autocomplete suggestions from a different object
+    "updateFromSourceObject": false, // Update the autocomplete suggestions from a different object
+    "caseSensitiveMatch": true // Define if suggestions should respect case of typed words. Default: true
     //EXAMPLE REGEXES:
     // /(#\\w+)+/g  chains of hashtags. if you got "abc #first#second" you'll get "#first#second"
     // /(#\\w+)/g  get words with hash. if you got "abc #first#second" you'll get "#first","#second"
