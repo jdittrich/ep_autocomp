@@ -1,10 +1,15 @@
 describe("ep_autocomp - plugin customization", function(){
+  var utils;
+
+  before(function () {
+    utils = ep_autocomp_test_helper.utils;
+  });
 
   beforeEach(function(cb){
     helper.newPad(function(){
-      ep_autocomp_test_helper.utils.clearPad(function() {
-        ep_autocomp_test_helper.utils.resetFlagsAndEnableAutocomplete(function(){
-          ep_autocomp_test_helper.utils.writeWordsWithC(cb);
+      utils.clearPad(function() {
+        utils.resetFlagsAndEnableAutocomplete(function(){
+          utils.writeWordsWithC(cb);
         });
       });
     });
@@ -24,18 +29,15 @@ describe("ep_autocomp - plugin customization", function(){
     });
 
     it("calls the callback when user selects a suggestion", function(done){
-      var outer$ = helper.padOuter$;
       var inner$ = helper.padInner$;
 
       // type something to display suggestions
       var $lastLine =  inner$("div").last();
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
-      helper.waitFor(function(){
-        return outer$('div#autocomp').is(":visible");
-      }).done(function(){
+      utils.waitShowSuggestions(this, function(){
         // select a suggestion to trigger callback
-        ep_autocomp_test_helper.utils.pressEnter();
+        utils.pressEnter();
 
         helper.waitFor(function(){
           return callbackCalled;
@@ -76,26 +78,21 @@ describe("ep_autocomp - plugin customization", function(){
     });
 
     it("does not show suggestions", function(done){
-      var outer$ = helper.padOuter$;
-      var inner$ = helper.padInner$;
-
       // type something to display suggestions
-      var $lastLine = ep_autocomp_test_helper.utils.getLine(3);
+      var $lastLine = utils.getLine(3);
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('c');
-      helper.waitFor(function(){
-        return outer$('div#autocomp').is(":visible");
-      }).done(function(){
+      utils.waitShowSuggestions(this, function(){
         //trigger key event (that should be ignored)
-        ep_autocomp_test_helper.utils.pressEnter();
+        utils.pressEnter();
 
         //verify key event was ignored
         setTimeout(function(){
-          var $lastLine = ep_autocomp_test_helper.utils.getLine(3);
+          var $lastLine = utils.getLine(3);
           expect($lastLine.text()).to.be("c");
           done();
         }, 500);
-      })
+      });
     });
   });
 
@@ -107,36 +104,35 @@ describe("ep_autocomp - plugin customization", function(){
     });
 
     it("displays suggestions without having to type a word", function(done) {
-      var outer$ = helper.padOuter$;
       var inner$ = helper.padInner$;
       var $lastLine = inner$("div").last();
 
       // type something to display suggestions
       $lastLine.sendkeys(" ");
 
-      helper.waitFor(function(){
-        return outer$('div#autocomp').is(":visible");
-      }).done(done);
+      utils.waitShowSuggestions(this, done);
     });
 
     it("applies suggestion word", function(done){
       //change the first line to a list
-      ep_autocomp_test_helper.utils.addAttributeToLine(0, function(){
-        var outer$ = helper.padOuter$;
-        var $lastLine =  ep_autocomp_test_helper.utils.getLine(0);
+      var self = this;
+      utils.addAttributeToLine(0, function(){
+        var $lastLine =  utils.getLine(0);
         // let the line empty
         $lastLine.sendkeys('{selectall}{backspace}');
 
-        helper.waitFor(function(){
-          return outer$('div#autocomp').is(":visible");
-        }).done(function(){
-          // select first option "chrome"
-          ep_autocomp_test_helper.utils.pressEnter();
-          helper.waitFor(function(){
-            var $firstLine =  ep_autocomp_test_helper.utils.getLine(0);
-            var $firstItem = $firstLine.find("ul li").text();
-            return $firstItem === "chrome";
-          }).done(done);
+        utils.waitShowSuggestions(self, function(){
+          // wait a little to press enter
+          setTimeout(function() {
+            // select first option "chrome"
+            utils.pressEnter();
+            helper.waitFor(function(){
+              var $firstLine =  utils.getLine(0);
+              var $firstItem = $firstLine.find("ul li").text();
+              return $firstItem === "chrome";
+            }).done(done);
+
+          }, 1000);
         });
       });
     });
@@ -145,22 +141,23 @@ describe("ep_autocomp - plugin customization", function(){
   context("when suggestions are not case sensitive", function(){
     // disable case sensitive matches
     beforeEach(function(){
-      var autocomp = helper.padChrome$.window.autocomp;
-      autocomp.caseSensitiveMatch = false;
-    })
+      utils.disableCaseSensitiveMatch();
+    });
+
+    afterEach(function () {
+      utils.enableCaseSensitiveMatch();
+    });
 
     it("shows suggestions in uppercase and lowercase", function(done){
       var outer$ = helper.padOuter$;
 
       //write CAR in the last line, duplicated word uppercase
-      var $lastLine = ep_autocomp_test_helper.utils.getLine(3);
+      var $lastLine = utils.getLine(3);
       $lastLine.sendkeys('{selectall}');
       $lastLine.sendkeys('CAR CA');
 
-      helper.waitFor(function(){
-        return outer$('div#autocomp').is(":visible");
-      }).done(function(){
-        var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      utils.waitShowSuggestions(this,function(){
+        var suggestions = utils.textsOf(outer$('div#autocomp li'));
         expect(suggestions).to.contain("CAR");
         expect(suggestions).to.contain("car");
         done();

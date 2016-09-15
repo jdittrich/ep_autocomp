@@ -1,10 +1,16 @@
 describe("ep_autocomp - commands auto complete", function(){
+  var utils;
+
+  before(function () {
+    utils = ep_autocomp_test_helper.utils;
+  });
+
   //create a new pad before each test run
   beforeEach(function(cb){
     helper.newPad(function(){
-      ep_autocomp_test_helper.utils.clearPad(function() {
-        ep_autocomp_test_helper.utils.resetFlagsAndEnableAutocomplete(function(){
-          ep_autocomp_test_helper.utils.writeWordsWithC(cb);
+      utils.clearPad(function() {
+        utils.resetFlagsAndEnableAutocomplete(function(){
+          utils.writeWordsWithC(cb);
         });
       });
     });
@@ -19,13 +25,10 @@ describe("ep_autocomp - commands auto complete", function(){
     var $lastLine =  inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function() {
+    utils.waitShowSuggestions(this, function(){
       // force autocomplete to move selection down
       var autocomp = helper.padChrome$.window.autocomp;
       autocomp.moveSelectionDown();
-
       var selectedSuggestion = outer$('div#autocomp li.selected');
       expect(selectedSuggestion.text()).to.be("chrome");
       done();
@@ -40,9 +43,7 @@ describe("ep_autocomp - commands auto complete", function(){
     var $lastLine =  inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function() {
+    utils.waitShowSuggestions(this, function(){
       // force autocomplete to move selection to last option
       var autocomp = helper.padChrome$.window.autocomp;
       autocomp.moveSelectionDown();
@@ -58,17 +59,14 @@ describe("ep_autocomp - commands auto complete", function(){
   });
 
   it("selects suggestion", function(done){
-    var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
     // opens suggestions box
     var $lastLine = inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function() {
+    utils.waitShowSuggestions(this, function(){
       var $lastLine = inner$('div').last();
-      var context = ep_autocomp_test_helper.utils.mockContext($lastLine);
+      var context = utils.mockContext($lastLine);
 
       // force autocomplete to select first option
       var autocomp = helper.padChrome$.window.autocomp;
@@ -88,9 +86,7 @@ describe("ep_autocomp - commands auto complete", function(){
     var $lastLine = inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function() {
+    utils.waitShowSuggestions(this, function(){
       // force autocomplete to close suggestions box
       var autocomp = helper.padChrome$.window.autocomp;
       autocomp.closeSuggestionBox();
