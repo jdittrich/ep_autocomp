@@ -1,17 +1,25 @@
 describe("ep_autocomp - plugin customization - when flag to show suggestions for Latin characters is turned on", function(){
+  var utils;
+
+  before(function () {
+    utils = ep_autocomp_test_helper.utils;
+  });
+
+  after(function () {
+    utils.enableCaseSensitiveMatch();
+  });
 
   beforeEach(function(cb){
     helper.newPad(function(){
-      ep_autocomp_test_helper.utils.clearPad(function() {
-        ep_autocomp_test_helper.utils.resetFlagsAndEnableAutocomplete(function(){
+      utils.clearPad(function() {
+        utils.resetFlagsAndEnableAutocomplete(function(){
           // enable flag to consider Latin chars as regular chars
           var autocomp = helper.padChrome$.window.autocomp;
           autocomp.ignoreLatinCharacters = true;
 
           // ignore case just to make tests easier -- so we don't need to create the double
           // of test scenarios
-          autocomp.caseSensitiveMatch = false;
-
+          utils.disableCaseSensitiveMatch();
           cb();
         });
       });
@@ -20,6 +28,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
   });
 
   it("shows suggestions with 'á', 'à', 'ä', 'ã', 'â', 'Á', 'À', 'Ä', 'Ã', 'Â' when user types 'a'", function(done){
+    this.timeout(6000);
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
 
@@ -33,8 +42,8 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
 
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
-    }).done(function(){
-      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+    }, 4000).done(function(){
+      var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dá");
       expect(suggestions).to.contain("dà");
       expect(suggestions).to.contain("dä");
@@ -64,7 +73,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dé");
       expect(suggestions).to.contain("dè");
       expect(suggestions).to.contain("dë");
@@ -92,7 +101,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dí");
       expect(suggestions).to.contain("dì");
       expect(suggestions).to.contain("dï");
@@ -120,7 +129,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dó");
       expect(suggestions).to.contain("dò");
       expect(suggestions).to.contain("dö");
@@ -150,7 +159,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dú");
       expect(suggestions).to.contain("dù");
       expect(suggestions).to.contain("dü");
@@ -178,7 +187,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dç");
       expect(suggestions).to.contain("dÇ");
       done();
@@ -201,7 +210,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     helper.waitFor(function(){
       return outer$('div#autocomp').is(":visible");
     }).done(function(){
-      var suggestions = ep_autocomp_test_helper.utils.textsOf(outer$('div#autocomp li'));
+      var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dáo");
       expect(suggestions).to.not.contain("dào");
       expect(suggestions).to.not.contain("däo");
@@ -220,6 +229,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
 
   context("when user did not type the beginning of suggestion using Latin chars", function() {
     beforeEach(function(cb) {
+      var self = this;
       var outer$ = helper.padOuter$;
       var inner$ = helper.padInner$;
 
@@ -239,18 +249,15 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
         $lastLine.sendkeys("{rightarrow}{rightarrow}{rightarrow}o");
 
         // wait for suggestions to be available
-        helper.waitFor(function(){
-          return outer$('div#autocomp').is(":visible");
-        }).done(cb);
+        utils.waitShowSuggestions(self, cb);
       });
     });
 
     it("replaces the entire word respecting text formatting", function(done){
-      var outer$ = helper.padOuter$;
       var inner$ = helper.padInner$;
 
       // select first suggestion ("árvore")
-      ep_autocomp_test_helper.utils.pressEnter();
+      utils.pressEnter();
 
       // check if suggestion replaced text with Latin chars
       helper.waitFor(function(){
