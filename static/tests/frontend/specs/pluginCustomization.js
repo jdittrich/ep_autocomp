@@ -164,6 +164,32 @@ describe("ep_autocomp - plugin customization", function(){
       });
     });
   });
+
+  context("when flag to show suggestions by shortcut CTRL + SPACE is turned off", function(){
+    beforeEach(function () {
+      var autocomp = helper.padChrome$.window.autocomp;
+      // show on empty words to make easier
+      autocomp.showOnEmptyWords = true;
+      autocomp.enableShowSuggestionWithCtrlAndSpace = false;
+    });
+
+    it("does not show the suggestion box", function(done){
+      var inner$ = helper.padInner$;
+
+      // send caret to last line
+      var $lastLine =  inner$("div").last();
+      $lastLine.sendkeys('{selectall}{leftarrow}');
+
+      // press shortcut, to force show suggestions
+      utils.pressCtrlSpace();
+      setTimeout(function() {
+        var outer$ = helper.padOuter$;
+        var suggestionBox = outer$('div#autocomp').is(":visible");
+        expect(suggestionBox).to.be(false);
+        done();
+      }, 1000);
+    });
+  });
 });
 
 /* ********** Helper functions ********** */

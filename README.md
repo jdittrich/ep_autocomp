@@ -14,6 +14,8 @@ In its preconfigured form it completes words (searches the document for words, s
 * `processEditEvent`: define if ep_autocomp should handle ace edit events (user editing a word). Default: true
 * `showOnEmptyWords`: define if suggestions should be displayed even when user didn't type any word. Useful for plugins that control when suggestions are displayed or not. Default: false
 * `ignoreLatinCharacters`: define if Latin characters should be considered the same as their non-Latin equivalents. Ex: user types "a", suggestions include words like "ál", "ão", etc. Default: false
+* `enableShowSuggestionWithCtrlAndSpace`: define if ep_autocomp should display the suggestions when user presses
+the shortcut CTRL + SPACE. Default: true
 
 
 ### Advanced customization
@@ -22,7 +24,7 @@ Include stuff in settings.json
 
 ```
   "ep_autocomp":{
-    "hardcodedSuggestions":[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.    
+    "hardcodedSuggestions":[], //NOTE: insert your static suggestions here, e.g. a list of keywords. Must be a flat array with string values.
     "regexToFind":"[/(\\S+)/g]",
     "suggestWordsInDocument": true, // Use words in document to built a dictionary
     "enabled": false, // Enabled by default?

@@ -1,5 +1,8 @@
 var ep_autocomp_test_helper = ep_autocomp_test_helper || {};
 ep_autocomp_test_helper.utils = {
+  ENTER: 13,
+  ESC: 27,
+  SPACE: 32,
   writeWordsWithC: function(cb){
     var inner$ = helper.padInner$;
     var $firstTextElement = inner$("div").first();
@@ -58,7 +61,7 @@ ep_autocomp_test_helper.utils = {
     return;
   },
 
-  pressShortcut: function(keyCode){
+  pressShortcut: function(keyCode, ctrlPressed){
     var inner$ = helper.padInner$;
     if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
       var evtType = "keypress";
@@ -67,15 +70,20 @@ ep_autocomp_test_helper.utils = {
     }
     var e = inner$.Event(evtType);
     e.keyCode = keyCode;
+    e.ctrlKey = ctrlPressed !== undefined ? true : false;
     inner$("#innerdocbody").trigger(e);
+  },
+  pressCtrlSpace: function(){
+    var ctrlPressed = true;
+    this.pressShortcut(this.SPACE, ctrlPressed);
   },
 
   pressEnter: function(){
-    this.pressShortcut(13);
+    this.pressShortcut(this.ENTER);
   },
 
   pressEsc: function(){
-    this.pressShortcut(27);
+    this.pressShortcut(this.ESC);
   },
 
   pressListButton: function(){
