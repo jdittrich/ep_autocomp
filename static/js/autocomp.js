@@ -32,7 +32,8 @@ var autocomp = {
   ignoreLatinCharacters: false,
   // flag to keep track of target line even if there is no suggestion for the typed text
   doNotResetTargetLineOnEmptySuggestionList: false,
-
+  // flag to allow show suggestion using shortcut CTRL + SPACE
+  enableShowSuggestionWithCtrlAndSpace: true,
   tagetLine: undefined,
 
   // collection of callbacks to be called after user selects a suggestion from the list
@@ -157,7 +158,7 @@ var autocomp = {
     }
 
     //SPACE AND CONTROL PRESSED
-    if(this.ctrlSpacePressed(context.evt)){
+    if(this.ctrlSpacePressed(context.evt) && autocomp.enableShowSuggestionWithCtrlAndSpace){
       if($autocomp.is(":hidden")){
         this.update(context);
       }else{
