@@ -45,9 +45,9 @@ Originally, this was written to autocomplete hashtags, you may want to complete 
 ## Install
 Open terminal, navigate  to your etherpad folder and: type `npm install ep_autocomp` OR type `git clone https://github.com/jdittrich/ep_autocomp.git node_modules/ep_autocomp`
 
-# Autocompletion
+## Enable 
 
-Enable under settings
+Enable under pad settings (the gear icon) 
 
 #License
 Copyright 2014, John McLear
