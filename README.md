@@ -49,7 +49,7 @@ Open terminal, navigate  to your etherpad folder and: type `npm install ep_autoc
 
 Enable under pad settings (the gear icon) 
 
-#License
+# License
 Copyright 2014, John McLear
 
 Copyright 2014, Jan Dittrich
