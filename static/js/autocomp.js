@@ -107,7 +107,7 @@ var autocomp = {
 
     // show suggestions next to caret position
     $autocomp
-      .show()
+      .removeClass('autocomp-hidden')
       .scrollTop(0) // does not keep previous scroll position
       .css({top: caretPosition.top, left: caretPosition.left});
   },
@@ -118,14 +118,14 @@ var autocomp = {
     //precaution
     if(!$autocomp||!context) return;
     //if disabled in settings
-    if(!$('#options-autocomp').is(':checked')) return;
+    if(!clientVars.ep_autocomp.enabled) return;
     //if not menu not shown, don't prevent defaults
 
     //if key is ↑ , choose next option, prevent default
     //if key is ↓ , choose next option, prevent default
     //if key is ENTER, read out the complementation, close autocomplete menu and input it at caret. It will reopen tough, if there is still something to complete. No problem, on a " " or any other non completable character and it is gone again.
     var eventProcessed = false;
-    if($autocomp.is(":visible")){
+    if(!$autocomp.hasClass('autocomp-hidden')){
       //ENTER PRESSED
       if(this.enterPressed(context.evt)){
         var textReplaced = this.selectSuggestion(context);
@@ -341,7 +341,7 @@ var autocomp = {
   closeSuggestionBox:function(context){
     this.targetLine = undefined;
     if($autocomp){
-      $autocomp.hide();
+      $autocomp.addClass('autocomp-hidden');
     }
   },
   aceEditEvent:function(type, context, cb){
