@@ -499,10 +499,10 @@ var autocomp = {
     Than we insert a span exactly there and get its position.
     Than we clean up again, cause this is messy stuff.
     */
-    var nodeInfo        = this.getNodeInfoWhereCaretIs(context);
+    var $clonedLine     = this.cloneLineWithStyle(context);
+    var nodeInfo        = this.getNodeInfoWhereCaretIs(context, $clonedLine);
     var counter         = nodeInfo.counter;
-    var $childNode      = nodeInfo.node;
-    var $cloneChildNode = this.cloneNodeWithStyle($childNode);
+    var $cloneChildNode = nodeInfo.node;
 
     //
     // In the following section we insert a DOM node where the caret is.
@@ -514,7 +514,7 @@ var autocomp = {
     var targetNodeText = targetNode.nodeValue || ""; //get the text of the subnode our caret is in.
 
     var span = document.createElement("span"); //create a helper span to be inserted later
-    span.appendChild(document.createTextNode('X'));//…and give it a content.
+    span.appendChild(document.createTextNode(''));//…and give it a content.
 
     var textBeforeCaret = targetNodeText.substr(0, leftoverString); //string before the caret
     var textAfterCaret = targetNodeText.substr(leftoverString); //string after the caret
@@ -528,12 +528,11 @@ var autocomp = {
     $cloneChildNode[0].appendChild(span); //insert element at caret position.
     $cloneChildNode[0].appendChild(document.createTextNode(textAfterCaret)); //insert text after caret
 
-    $cloneChildNode.appendTo($('iframe[name="ace_outer"]').contents().find('#outerdocbody')); //In order to see where the node we added that the caret position is, we need to insert it into the document. We do not append it in the inner editor (messes with ace), but put it in the outer one.
-
+    $clonedLine.appendTo(this.getPadOuterBody()); //In order to see where the node we added that the caret position is, we need to insert it into the document. We do not append it in the inner editor (messes with ace), but put it in the outer one.
     var caretPosition = $(span).offset(); //now we get the position of the element which was inserted at the caret position
-    var scrollYPos = $('iframe[name="ace_outer"]').contents().scrollTop(); //get scroll position to take it into account.
+    var scrollYPos = this.getPadOuter().scrollTop(); //get scroll position to take it into account.
 
-    $cloneChildNode.remove(); //clean up again.
+    $clonedLine.remove(); //clean up again.
 
     return {
       top: (caretPosition.top + scrollYPos), //so offset gives me the ofset to the root document (not the iframe) so after scrolling down, top becomes less or even negative. So add the offset to get back where it belongs.
@@ -541,10 +540,12 @@ var autocomp = {
     };
   },
 
-  getNodeInfoWhereCaretIs: function(context){
+  /* $caretDiv is optional. If not provided, get it from context info */
+  getNodeInfoWhereCaretIs: function(context, $caretDiv){
     var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x;
     var caretColumn = caretPosition[1];
-    var $caretDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the caret is in
+
+    $caretDiv = $caretDiv || $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the caret is in, if not provided
 
     //$textNodes than holds all text nodes that are found inside the div (in the same order as in the document hopefully!)
     var $textNodes = $caretDiv.find("*").contents().filter(function() {
@@ -582,43 +583,72 @@ var autocomp = {
     };
   },
 
-  // Clone $target node and copy its style
-  cloneNodeWithStyle: function($targetNode){
+  // Clone line with caret and copy its style
+  cloneLineWithStyle: function(context){
+    var caretPosition = context.rep.selEnd; //get caret position as array, [0] is y, [1] is x;
+    var $caretDiv = $(context.rep.lines.atIndex(caretPosition[0]).domInfo.node); //determine the node the caret is in
+
     //Position of editor relative to client. Needed in final positioning
-    //(maybe move this out for performance reasons? It rarely changes...)
-    var $padOuter = $('iframe[name="ace_outer"]').contents().find('#outerdocbody');
-    var $padInner = $padOuter.find('iframe[name="ace_inner"]');
-    var innerEditorPosition = $padInner[0].getBoundingClientRect();
+    var innerEditorPosition = this.getPadInner().get(0).getBoundingClientRect();
 
     //find the position of the target node
-    var childNodePosition = $targetNode.position(); //was: offset()
-
-    //get its styles (to reapply to a clone later)
-    var computedCSS = window.getComputedStyle($targetNode[0]);
+    var childNodePosition = $caretDiv.position(); //was: offset()
 
     //clone it
-    var $clonedNode = $targetNode.clone();
+    var $clonedLine = $caretDiv.clone();
 
     //apply all styles to it
-    $clonedNode.attr("id","tempPosId");//change the id…
-    $clonedNode.css({ //apply the styles (todo: do it for subnodes as well
-      "position":"absolute",
+    $clonedLine.attr("id","tempPosId");//change the id…
+    $clonedLine.css({
+      position:"absolute",
+      top:childNodePosition.top+innerEditorPosition.top+"px" , //old: position.top+innerEditorPosition.top+"px"
+      left:childNodePosition.left+innerEditorPosition.left+"px", //old: position.left+innerEditorPosition.left+"px"
+      background:"gray",
+      color:"black",
+      display:"block",
+      // get the correct position when caret is not on the first line of $caretDiv
+      "white-space":"normal",
+      "word-wrap":"break-word",
+    });
+
+    //make sure $clonedLine and all its inner nodes have the same dimensions of
+    //the original nodes
+    this.copyStyles($caretDiv[0], $clonedLine[0]);
+    var $originalNodes = $caretDiv.find('*');
+    var $clonedNodes = $clonedLine.find('*');
+    for (var i = 0; i < $originalNodes.length; i++) {
+      this.copyStyles($originalNodes[i], $clonedNodes[i]);
+    }
+
+    return $clonedLine;
+  },
+
+  copyStyles: function(fromNode, toNode){
+    var computedCSS = window.getComputedStyle(fromNode);
+
+    $(toNode).css({
       width:computedCSS.width,
-      heigth:computedCSS.height,
+      height:computedCSS.height,
       margin:computedCSS.margin,
       padding:computedCSS.padding,
       fontSize:computedCSS.fontSize,
       fontWeight:computedCSS.fontWeight,
       fontFamily:computedCSS.fontFamily,
       lineHeight:computedCSS.lineHeight,
-      top:childNodePosition.top+innerEditorPosition.top+"px" , //old: position.top+innerEditorPosition.top+"px"
-      left:childNodePosition.left+innerEditorPosition.left+"px", //old: position.left+innerEditorPosition.left+"px"
-      background:"gray",
-      color:"black",
-      display:"block"
     });
+  },
 
-    return $clonedNode;
+  getPadOuter: function(){
+    this.padOuter = this.padOuter || $('iframe[name="ace_outer"]').contents();
+    return this.padOuter;
+  },
+  getPadOuterBody: function(){
+    this.padOuterBody = this.padOuterBody || this.getPadOuter().find('#outerdocbody');
+    return this.padOuterBody;
+  },
+  getPadInner: function(){
+    this.padInner = this.padInner || this.getPadOuter().find('iframe[name="ace_inner"]');
+    return this.padInner;
   },
 
   getParam: function(sname){
