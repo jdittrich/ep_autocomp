@@ -32,37 +32,34 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
 
   it("hides suggestions when user types a word that does not match any other from the text", function(done){
     var inner$ = helper.padInner$;
+    var test = this;
 
     // first make sure suggestions are displayed
     var $lastLine =  inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
-    utils.waitShowSuggestions(this, function(){
+    utils.waitShowSuggestions(test, function(){
       // then check if suggestions are hidden if there are no words that match
       var $lastLine =  inner$("div").last();
       $lastLine.sendkeys('notSavedWord');
-      helper.waitFor(function(){
-        var outer$ = helper.padOuter$;
-        return !outer$('div#autocomp').is(":visible");
-      }, 2000).done(done);
+      utils.waitHideSuggestions(test, done);
     });
   });
 
   it("hides suggestions when user types ESC", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
+    var test = this;
 
     // first make sure suggestions are displayed
     var $lastLine =  inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
-    utils.waitShowSuggestions(this, function(){
+    utils.waitShowSuggestions(test, function(){
       // then press ESC
       utils.pressEsc();
 
-      helper.waitFor(function(){
-        return !outer$('div#autocomp').is(":visible");
-      }).done(done);
+      utils.waitHideSuggestions(test, done);
     });
   });
 
@@ -216,6 +213,3 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     });
   });
 });
-
-/* ********** Helper functions ********** */
-var ep_autocomp_test_helper = ep_autocomp_test_helper || {};

@@ -40,9 +40,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('da');
 
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }, 4000).done(function(){
+    utils.waitShowSuggestions(this, function(){
       var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dá");
       expect(suggestions).to.contain("dà");
@@ -70,9 +68,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('de');
 
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function(){
+    utils.waitShowSuggestions(this, function(){
       var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dé");
       expect(suggestions).to.contain("dè");
@@ -98,9 +94,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('di');
 
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function(){
+    utils.waitShowSuggestions(this, function(){
       var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dí");
       expect(suggestions).to.contain("dì");
@@ -126,9 +120,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('do');
 
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function(){
+    utils.waitShowSuggestions(this, function(){
       var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dó");
       expect(suggestions).to.contain("dò");
@@ -156,9 +148,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('du');
 
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function(){
+    utils.waitShowSuggestions(this, function(){
       var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dú");
       expect(suggestions).to.contain("dù");
@@ -184,9 +174,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     // type first chars, so all words written above should be displayed
     $firstLine.sendkeys('dc');
 
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function(){
+    utils.waitShowSuggestions(this, function(){
       var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dç");
       expect(suggestions).to.contain("dÇ");
@@ -207,9 +195,7 @@ describe("ep_autocomp - plugin customization - when flag to show suggestions for
     // type first chars, so some words written above should be displayed
     $firstLine.sendkeys('dá');
 
-    helper.waitFor(function(){
-      return outer$('div#autocomp').is(":visible");
-    }).done(function(){
+    utils.waitShowSuggestions(this, function(){
       var suggestions = utils.textsOf(outer$('div#autocomp li'));
       expect(suggestions).to.contain("dáo");
       expect(suggestions).to.not.contain("dào");

@@ -82,6 +82,8 @@ describe("ep_autocomp - commands auto complete", function(){
   it("closes suggestions box without replacing the text", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
+    var test = this;
+
     // opens suggestions box
     var $lastLine = inner$("div").last();
     $lastLine.sendkeys('{selectall}');
@@ -91,9 +93,7 @@ describe("ep_autocomp - commands auto complete", function(){
       var autocomp = helper.padChrome$.window.autocomp;
       autocomp.closeSuggestionBox();
 
-      helper.waitFor(function(){
-        return !outer$('div#autocomp').is(":visible");
-      }).done(function(){
+      utils.waitHideSuggestions(test, function(){
         var $lastLine =  inner$("div").last();
         expect($lastLine.text()).to.be("c");
         done();
@@ -101,5 +101,3 @@ describe("ep_autocomp - commands auto complete", function(){
     });
   });
 });
-
-var ep_autocomp_test_helper = ep_autocomp_test_helper || {};

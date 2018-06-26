@@ -146,6 +146,14 @@ ep_autocomp_test_helper.utils = {
       return outer$('div#autocomp').is(":visible");
     }, 3000).done(cb);
   },
+  waitHideSuggestions: function(test, cb){
+    test.timeout(5000);
+    helper.waitFor(function(){
+      var outer$ = helper.padOuter$;
+      return !outer$('div#autocomp').is(":visible");
+    }, 3000).done(cb);
+  },
+
   disableCaseSensitiveMatch: function(){
     var autocompConfig = helper.padChrome$.window.clientVars.ep_autocomp;
     autocompConfig.caseSensitiveMatch = false;

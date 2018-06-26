@@ -191,6 +191,3 @@ describe("ep_autocomp - plugin customization", function(){
     });
   });
 });
-
-/* ********** Helper functions ********** */
-var ep_autocomp_test_helper = ep_autocomp_test_helper || {};
