@@ -513,8 +513,7 @@ var autocomp = {
     var targetNode = $cloneChildNode[0].childNodes[0]; // the subnode our caret is in.
     var targetNodeText = targetNode.nodeValue || ""; //get the text of the subnode our caret is in.
 
-    var span = document.createElement("span"); //create a helper span to be inserted later
-    span.appendChild(document.createTextNode(''));//…and give it a content.
+    var span = this.createHelperSpan(); //create a helper span to be inserted later
 
     var textBeforeCaret = targetNodeText.substr(0, leftoverString); //string before the caret
     var textAfterCaret = targetNodeText.substr(leftoverString); //string after the caret
@@ -636,6 +635,14 @@ var autocomp = {
       fontFamily:computedCSS.fontFamily,
       lineHeight:computedCSS.lineHeight,
     });
+  },
+
+  createHelperSpan: function(){
+    var span = document.createElement('span');
+    // put some invisible content (vertical tab), so span is always displayed the same way
+    // (an empty span might be displayed above text on some scenarios)
+    span.appendChild(document.createTextNode('\x0b'));
+    return span;
   },
 
   getPadOuter: function(){
