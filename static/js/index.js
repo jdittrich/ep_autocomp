@@ -354,7 +354,7 @@ var autocomp = {
     if(!$('#options-autocomp').is(':checked')) return;
     autocomp.update(context);
   },
-  update:function(context, fixedSuggestions, customRegex, customRegexIndex){
+  update:function(context, fixedSuggestions, customRegex, customRegexIndex, showExactMatch){
     if(context.rep.selStart === null) return;
     //as edit event is called when anyone edits, we must ensure it is the current user
     if(!autocomp.isEditByMe(context)) return;
@@ -370,7 +370,7 @@ var autocomp = {
     }
 
     suggestions = fixedSuggestions || autocomp.getPossibleSuggestions(context);
-    filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions);
+    filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions, showExactMatch);
 
     if(filteredSuggestions.length===0){
       this.closeSuggestionBox();
@@ -386,11 +386,13 @@ var autocomp = {
     var caretPosition = autocomp.caretPosition(context);
     autocomp.createAutocompHTML(filteredSuggestions, caretPosition, partialWord, context);
   },
-  filterSuggestionList:function(partialWord,possibleSuggestions){
+  filterSuggestionList:function(partialWord, possibleSuggestions, showExactMatch){
     /*
     gets:
     - the string for which we want matches ("partialWord")
     - a list of all completions
+    - a flag indicating if should discard an exact match or not ("showExactMatch"),
+      like showing a suggestion "abc" when partialWord is also "abc"
 
     returns: an array with objects containing suggestions as object with
     {
@@ -409,8 +411,8 @@ var autocomp = {
       var allowEmptyPartialWord   = (partialWord.length === 0 && autocomp.showOnEmptyWords);
       // does partialWord start at the beginning of possibleSuggestion?
       var isSubtextOfSuggestion   = autocomp.subtextOfSuggestion(possibleSuggestion, partialWord);
-      // avoid autocomplete "abc" with "abc"
-      var notSameWordOfSuggestion = (possibleSuggestion !== partialWord);
+      // avoid autocomplete "abc" with "abc", unless explicitly configured to do that
+      var notSameWordOfSuggestion = showExactMatch || (possibleSuggestion !== partialWord);
 
       if((allowEmptyPartialWord || isSubtextOfSuggestion) && notSameWordOfSuggestion){
         var complementaryString = possibleSuggestion.slice(partialWord.length);
