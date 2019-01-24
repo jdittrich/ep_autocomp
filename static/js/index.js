@@ -163,7 +163,7 @@ var autocomp = {
     //SPACE AND CONTROL PRESSED
     if(this.ctrlSpacePressed(context.evt) && autocomp.enableShowSuggestionWithCtrlAndSpace){
       if($autocomp.is(":hidden")){
-        this.update(context);
+        this.updateSuggestions(context);
       }else{
         this.closeSuggestionBox();
       }
@@ -352,15 +352,79 @@ var autocomp = {
     if (!autocomp.processEditEvent) return;
     //if disabled in settings
     if(!$('#options-autocomp').is(':checked')) return;
-    autocomp.update(context);
+    autocomp.updateSuggestions(context);
   },
+
+  // WARNING: this method is now deprecated, and should not be used anymore.
+  // Please use `updateSuggestions` instead.
   update:function(context, fixedSuggestions, customRegex, customRegexIndex){
+    console.warn("autocomp.update() is deprecated, please use autocomp.updateSuggestions() instead");
+
+    this.updateSuggestions(context, {
+      fixedSuggestions: fixedSuggestions,
+      customRegex: customRegex,
+      customRegexIndex: customRegexIndex,
+    });
+  },
+
+  /*
+  Force suggestions to be updated.
+  Parameters:
+    - context: the context usually provided by Etherpad on plugin hooks
+    - configs: an object with customizations for this update:
+      - fixedSuggestions: an array of suggestions to be provided to the user, if you
+        don't want autocomp to scan through the entire pad text to build the list of
+        suggestions. Useful when you want to provide different lists of suggestions
+        according to the line attributes, for example.
+
+      - customRegex: regex to be used to select which text before caret should matches
+        the available suggestions (provided by fixedSuggestions or built by autocomp).
+        Useful when you want to consider a broader context for the suggestions.
+        Default: all chars since last white-space (`/[\S]*$/`).
+
+      - customRegexIndex: index on the match of customRegex. Must be one of the
+        available indexes of the result of `textBeforeCaret.match(customRegex)`.
+        Default: 0 (entire regex match);
+
+      - showExactMatch: flag to allow suggestions matching the exact text to be shown.
+        Default: false;
+
+  Example:
+  You have a strict list of sections your pad must have ("Introduction",
+  "Main Content", "Conclusion", "References", "References - Images"), and you need
+  this suggestions to be displayed only when line has a `<h1>`.
+
+  A section begins with the number and is followed by ".", like this: "1. Introduction".
+
+  So you call updateSuggestions whenever the user types something on a line with
+   `<h1>`, and provide the following configs:
+  ```
+  var configs = {
+    fixedSuggestions: ["Introduction", "Main Content", "Conclusion", "References", "References - Images"],
+    customRegex: / ^\d\. (.*)$/, // ignore section number on the beginning of the line
+    customRegexIndex: 1, // capture what is inside the `(.*)` of customRegex
+    showExactMatch: true, // allow a line with "4. References" to still show the options
+                          // "References" *and* "References - Images"
+  };
+  ```
+  */
+  updateSuggestions:function(context, configs){
     if(context.rep.selStart === null) return;
     //as edit event is called when anyone edits, we must ensure it is the current user
     if(!autocomp.isEditByMe(context)) return;
 
+    //define defaults for configs
+    configs = configs || {};
+    //TODO: make custom regex dependent on the clientVars.ep_autocomp.regexToFind.
+    //what is the section to be considered? Usually, this will be everything which is not a space.
+    //The Regex includes the $ (end of line) so we can find the section of interest beginning from the strings end.
+    //(To understand better, just paste into regexpal.com)
+    configs.customRegex = configs.customRegex || /[\S]*$/;
+    configs.customRegexIndex = configs.customRegexIndex || 0;
+    configs.showExactMatch = configs.showExactMatch || false;
+
     //get the word which is being typed
-    var partialWord = this.getCurrentPartialWord(context, customRegex, customRegexIndex);
+    var partialWord = this.getCurrentPartialWord(context, configs.customRegex, configs.customRegexIndex);
 
     //hide suggestions if no word is typed
     var wordIsEmpty = partialWord.length === 0;
@@ -369,8 +433,8 @@ var autocomp = {
       return;
     }
 
-    suggestions = fixedSuggestions || autocomp.getPossibleSuggestions(context);
-    filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions);
+    suggestions = configs.fixedSuggestions || autocomp.getPossibleSuggestions(context);
+    filteredSuggestions = autocomp.filterSuggestionList(partialWord, suggestions, configs.showExactMatch);
 
     if(filteredSuggestions.length===0){
       this.closeSuggestionBox();
@@ -386,11 +450,13 @@ var autocomp = {
     var caretPosition = autocomp.caretPosition(context);
     autocomp.createAutocompHTML(filteredSuggestions, caretPosition, partialWord, context);
   },
-  filterSuggestionList:function(partialWord,possibleSuggestions){
+  filterSuggestionList:function(partialWord, possibleSuggestions, showExactMatch){
     /*
     gets:
     - the string for which we want matches ("partialWord")
     - a list of all completions
+    - a flag indicating if should discard an exact match or not ("showExactMatch"),
+      like showing a suggestion "abc" when partialWord is also "abc"
 
     returns: an array with objects containing suggestions as object with
     {
@@ -409,8 +475,8 @@ var autocomp = {
       var allowEmptyPartialWord   = (partialWord.length === 0 && autocomp.showOnEmptyWords);
       // does partialWord start at the beginning of possibleSuggestion?
       var isSubtextOfSuggestion   = autocomp.subtextOfSuggestion(possibleSuggestion, partialWord);
-      // avoid autocomplete "abc" with "abc"
-      var notSameWordOfSuggestion = (possibleSuggestion !== partialWord);
+      // avoid autocomplete "abc" with "abc", unless explicitly configured to do that
+      var notSameWordOfSuggestion = showExactMatch || (possibleSuggestion !== partialWord);
 
       if((allowEmptyPartialWord || isSubtextOfSuggestion) && notSameWordOfSuggestion){
         var complementaryString = possibleSuggestion.slice(partialWord.length);
@@ -729,14 +795,7 @@ var autocomp = {
       hardcodedSuggestions.concat(dynamicSuggestions).concat(sourceSuggestions).sort(), //combine dynamic and static array, the resulting array is than sorted
     true);//true, since input array is already sorted
   },
-  getCurrentPartialWord:function(context, customRegex, customRegexIndex){
-    //TODO: make section marker dependend on the clientVars.ep_autocomp.regexToFind.
-    //what is the  section to be considered? Usually, this will be everything which is not a space.
-    //The Regex includes the $ (end of line) so we can find the section of interest beginning form the strings end.
-    //(To understand better, just paste into regexpal.com)
-    var sectionMarker = customRegex || /[\S]*$/;
-    var index = customRegexIndex || 0;
-
+  getCurrentPartialWord:function(context, sectionMarker, index){
     var caretColumnPosition = this.getCaretColumnOnline(context);
     var currentLine         = this.getCurrentLine(context);
     var textBeforeCaret     = currentLine.slice(0,caretColumnPosition); //from beginning until caret

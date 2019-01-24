@@ -1,26 +1,25 @@
 describe("ep_autocomp - show autocomplete suggestions", function(){
   var utils;
 
-  before(function () {
+  // use a single pad for all the tests (so they run faster)
+  before(function(cb) {
     utils = ep_autocomp_test_helper.utils;
-  });
-
-  beforeEach(function(cb){
-    helper.newPad(function(){
-      utils.clearPad(function() {
-        utils.resetFlagsAndEnableAutocomplete(function(){
-          utils.writeWordsWithC(cb);
-        });
-      });
-    });
+    helper.newPad(cb);
     this.timeout(60000);
   });
 
+  beforeEach(function(cb){
+    utils.clearPad(function() {
+      utils.resetFlagsAndEnableAutocomplete(function(){
+        utils.writeWordsWithC(cb);
+      });
+    });
+  });
 
   it("displays suggestions when user types a word that matches others from the text", function(done){
     var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
-    var $lastLine =  inner$("div").last();
+    var $lastLine = inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     utils.waitShowSuggestions(this, function(){
@@ -30,29 +29,43 @@ describe("ep_autocomp - show autocomplete suggestions", function(){
     });
   });
 
+  it("does not display suggestions that are identical to the typed word", function(done){
+    var inner$ = helper.padInner$;
+    var test = this;
+
+    var $lastLine = inner$("div").last();
+    $lastLine.sendkeys('{selectall}');
+    $lastLine.sendkeys('chrom');
+    utils.waitShowSuggestions(test, function(){
+      // then check if suggestions are hidden if the word is identical
+      var $lastLine = inner$("div").last();
+      $lastLine.sendkeys('e');
+      utils.waitHideSuggestions(test, done);
+    });
+  });
+
   it("hides suggestions when user types a word that does not match any other from the text", function(done){
     var inner$ = helper.padInner$;
     var test = this;
 
     // first make sure suggestions are displayed
-    var $lastLine =  inner$("div").last();
+    var $lastLine = inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     utils.waitShowSuggestions(test, function(){
       // then check if suggestions are hidden if there are no words that match
-      var $lastLine =  inner$("div").last();
+      var $lastLine = inner$("div").last();
       $lastLine.sendkeys('notSavedWord');
       utils.waitHideSuggestions(test, done);
     });
   });
 
   it("hides suggestions when user types ESC", function(done){
-    var outer$ = helper.padOuter$;
     var inner$ = helper.padInner$;
     var test = this;
 
     // first make sure suggestions are displayed
-    var $lastLine =  inner$("div").last();
+    var $lastLine = inner$("div").last();
     $lastLine.sendkeys('{selectall}');
     $lastLine.sendkeys('c');
     utils.waitShowSuggestions(test, function(){
