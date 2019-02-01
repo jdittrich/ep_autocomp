@@ -11,7 +11,7 @@
         "aceEditEvent"          : "ep_autocomp/static/js/index",
         "aceKeyEvent"           : "ep_autocomp/static/js/index",
         "postAceInit"           : "ep_autocomp/static/js/index",
-      	"aceEditorCSS"	        : "ep_autocomp/static/js/index"
+        "aceEditorCSS"	        : "ep_autocomp/static/js/aceEditorCSS"
       }
     }
   ]

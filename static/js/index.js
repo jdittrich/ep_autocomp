@@ -842,11 +842,6 @@ exports.aceEditEvent = function(type, context, cb) {
   autocomp.aceEditEvent(type, context, cb);
 };
 
-exports.aceEditorCSS = function(hook_name, cb){
-  return ["/ep_autocomp/static/css/autocomp.css"];
-} // inner pad CSS
-
-
 exports.aceKeyEvent = function (type, context, cb) {
   return autocomp.aceKeyEvent(type, context);
 };
