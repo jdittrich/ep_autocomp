@@ -1,3 +1,7 @@
+**ep_autocomp is currently unmaintained**
+
+
+
 # Autocompletion for Etherpad
 
 ![screeshot](http://i.imgur.com/2uqR3Tg.png)
